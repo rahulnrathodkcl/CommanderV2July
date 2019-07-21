@@ -217,6 +217,8 @@ struct ThreePhase_state
 #define LCDCALLSTATE_OUTGOINGSMS 5
 //////////////////////////////////////////////////////////////////////////
 
+
+
 //////////////////////////////////////////////////////////////////////////
 struct adc_module adc_inst;
 //////////////////////////////////////////////////////////////////////////
@@ -272,6 +274,8 @@ bool getMotorState(void);
 void setMotorState(bool state);
 bool getMotorState_from_pin(void);
 void readSensorState(uint8_t *var3phaseState, bool *var3PhaseSequence, bool *motorState, bool *acPhaseState);
+bool checkMotorStatusUsingCurrent(void);
+bool detectMotorStateChangeUsingCurrent(void);
 void updateSensorState(uint8_t var3PhaseState, bool var3PhaseSequence, bool motorState, bool acPhaseState);
 void resetAutoStart(bool setChange);
 void triggerAutoStart(void);
@@ -279,7 +283,7 @@ void operateOnEvent(void);
 uint8_t checkLineSensors(void);
 void operateOnStableLine(void);
 bool waitStableLineOver(void);
-void startMotor(bool commanded);
+void startMotor(bool commanded,bool forcedStart);
 void stopMotor(bool commanded, bool forceStop,bool offButton);
 bool startMotorTimerOver(void);
 void unknownMotorOff(void);

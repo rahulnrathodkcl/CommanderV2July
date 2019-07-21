@@ -473,32 +473,32 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 	
 	double  root = 0.0;
 	
-	for (uint16_t i = 0; i < no_of_samples; i++) 
+	for (uint16_t i = 0; i < no_of_samples; i++)
 	{
 		square += pow(samples_buffer[i], 2);
 	}
 	
-	mean = (square / (float)(no_of_samples)); 
+	mean = (square / (float)(no_of_samples));
 	
-	 // Calculate Root.
-	 root = sqrt(mean);
-	 
-	 return (uint32_t)root;
+	// Calculate Root.
+	root = sqrt(mean);
+	
+	return (uint32_t)root;
 	
 	//////arrange decending order
 	//uint16_t a,b,c;
 	//
 	//for (b = 0; b < no_of_samples; ++b)
 	//{
-		//for (c = b + 1; c < no_of_samples; ++c)
-		//{
-			//if (samples_buffer[b] < samples_buffer[c])
-			//{
-				//a = samples_buffer[b];
-				//samples_buffer[b] = samples_buffer[c];
-				//samples_buffer[c] = a;
-			//}
-		//}
+	//for (c = b + 1; c < no_of_samples; ++c)
+	//{
+	//if (samples_buffer[b] < samples_buffer[c])
+	//{
+	//a = samples_buffer[b];
+	//samples_buffer[b] = samples_buffer[c];
+	//samples_buffer[c] = a;
+	//}
+	//}
 	//}
 	//
 	//return samples_buffer[5]; //0,1,2,3,4 are considered as voltage spikes
@@ -931,7 +931,24 @@ void readSensorState(uint8_t *allPhase, bool *phaseSeq,bool *motor, bool *acPhas
 	//*p1 = false;
 	//}
 
-	*motor  = !(port_pin_get_input_level(PIN_MOTOR_FEEDBACK));
+	// If MotorFeedback Detection is disabled
+	if (user_settings_parameter_struct.detectMotorFeedback == MOTORFEEDBACK_DETECTION_OFF)
+	{
+		*motor  = getMotorState();
+	}
+	// If Motor Feedback is to be detected using Current
+	else if(user_settings_parameter_struct.detectMotorFeedback == MOTORFEEDBACK_DETECTION_CURRENT)
+	{
+		*motor = checkMotorStatusUsingCurrent();
+		
+	}
+	// if Motor Feedback is to be detected using HW Feedback Circuit
+	else if(user_settings_parameter_struct.detectMotorFeedback == MOTORFEEDBACK_DETECTION_ON)
+	{
+		*motor  = !(port_pin_get_input_level(PIN_MOTOR_FEEDBACK));
+	}
+
+
 	
 	uint8_t last_comparison = AC_CHAN_STATUS_UNKNOWN;
 	
@@ -950,6 +967,31 @@ void readSensorState(uint8_t *allPhase, bool *phaseSeq,bool *motor, bool *acPhas
 	
 	*acPhase =  isACpowerAvailable;
 }
+
+bool checkMotorStatusUsingCurrent(void)
+{
+	if (Analog_Parameter_Struct.Motor_Current_IntPart > 4)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool detectMotorStateChangeUsingCurrent(void)
+{
+	if (getMotorState() != checkMotorStatusUsingCurrent())
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 
 void updateSensorState(uint8_t var3PhaseState, bool var3PhaseSeq, bool motorState, bool acPhaseState)
 {
@@ -1103,6 +1145,7 @@ void operateOnEvent(void)
 				}
 				THREEPHASE_OK_LED_ON;
 				simEventTemp[7] = registerEvent('S');	//register To SIM Motor has started
+				startMotor(true,true);
 			}
 			else
 			{
@@ -1184,14 +1227,13 @@ bool waitStableLineOver(void)
 }
 
 
-
-void startMotor(bool commanded)
+void startMotor(bool commanded, bool forcedStart)
 {
 	startTimerOn = false;
 	
-	if (getACPowerState() &&																														//AC Phase is Presnet
+	if (forcedStart || (getACPowerState() &&																														//AC Phase is Presnet
 	((getAllPhaseState()==AC_3PH) || (getAllPhaseState()==AC_2PH && !user_settings_parameter_struct.detectSinglePhasing)) &&				//3 phase is present, or SPP is OFF and 2 phase is present
-	((user_settings_parameter_struct.detectPhaseSequence && getPhaseSequence()) || (!user_settings_parameter_struct.detectPhaseSequence)))	//Phase Sequnce Protection is ON and correct phase seq, or Phase Seq Protection is off
+	((user_settings_parameter_struct.detectPhaseSequence && getPhaseSequence()) || (!user_settings_parameter_struct.detectPhaseSequence))))	//Phase Sequnce Protection is ON and correct phase seq, or Phase Seq Protection is off
 	{
 		if (!getMotorState())
 		{
@@ -1612,7 +1654,7 @@ void checkCurrentConsumption(void)
 static void button_detect_pin_callback(void)
 {
 	buttonEventOccured = true;
-//	xTaskNotifyGive(fiftymsTask);
+	//	xTaskNotifyGive(fiftymsTask);
 }
 
 static void vTask_MOTORCONTROL(void *params)
@@ -1633,6 +1675,10 @@ static void vTask_MOTORCONTROL(void *params)
 	eventOccured = false;
 	
 	uint8_t last_comparison = AC_CHAN_STATUS_UNKNOWN;
+	
+	//sets the variable to store current ticks, so that we can delay first event operation
+	uint32_t delayForFirstEvent = xTaskGetTickCount();			
+	bool firstEvent = true;	
 	
 	last_comparison = ac_chan_get_status(&ac_instance,AC_CHAN_CHANNEL_0);
 	vTaskDelay(500/portTICK_PERIOD_MS);
@@ -1706,6 +1752,8 @@ static void vTask_MOTORCONTROL(void *params)
 	resetAutoStart(true);
 	eventOccured=true;
 	//////////////////////////////
+
+	
 	for (;;)
 	{
 		
@@ -1719,10 +1767,21 @@ static void vTask_MOTORCONTROL(void *params)
 		{
 			uint8_t tempEventOccured=eventOccured;
 			uint8_t tempButtonEventOccured=buttonEventOccured;
+		
 			
 			if(tempEventOccured)
 			{
-				operateOnEvent();
+					if(firstEvent)
+					{
+						if(xTaskGetTickCount()-delayForFirstEvent>35000L)
+						{
+							firstEvent = false;
+						}
+					}
+					else
+					{
+						operateOnEvent();
+					}
 			}
 			//if(tempButtonEventOccured)
 			//{
@@ -1733,11 +1792,6 @@ static void vTask_MOTORCONTROL(void *params)
 			{
 				buttonFilter();
 			}
-			
-			//if(execButtonEvent)
-			//{
-			//buttonPostFilter();
-			//}
 		}
 		//// check if it is the time for new Voltage reading and if so than get new Voltage Reading.
 		if(should_Detect_New_Voltage()) {
@@ -1747,10 +1801,19 @@ static void vTask_MOTORCONTROL(void *params)
 		////////
 		
 		// To check if new reading of motor current is needed, and get new reading, and update in Analog_Parameter_Struct
-		if(should_Detect_New_Current()) {
-			detect_Motor_Current();
-			if (factory_settings_parameter_struct.ENABLE_CURRENT)
-			{
+		
+		if (factory_settings_parameter_struct.ENABLE_CURRENT)
+		{
+			if(should_Detect_New_Current()) {
+				detect_Motor_Current();
+				if (user_settings_parameter_struct.detectMotorFeedback== MOTORFEEDBACK_DETECTION_CURRENT)
+				{
+					if(detectMotorStateChangeUsingCurrent())
+					{
+						eventOccured=true;
+					}
+				}
+				
 				checkCurrentConsumption();
 			}
 		}
@@ -1782,7 +1845,7 @@ static void vTask_MOTORCONTROL(void *params)
 		{
 			if (startMotorTimerOver())
 			{
-				startMotor(false);
+				startMotor(false,false);
 			}
 		}
 		if (startSequenceOn)
@@ -1916,7 +1979,7 @@ void start_motor_service(void)
 	}
 	
 
-	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)700,NULL,1, &motorTask);
+	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)720,NULL,1, &motorTask);
 
 }
 
@@ -2076,7 +2139,7 @@ void buttonFilter(void)
 		if(lastButtonEvent==BTNEVENTSTART && START_BUTTON_INPUT_COMES)
 		{
 			lastButtonEvent=0;
-			startMotor(false);
+			startMotor(false,false);
 		}
 		else if(lastButtonEvent==BTNEVENTSTOP && STOP_BUTTON_INPUT_COMES)
 		{

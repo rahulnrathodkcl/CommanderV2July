@@ -55,8 +55,13 @@ uint8_t page_data[EEPROM_PAGE_SIZE];
 #define DND_LIGHT						'L'
 
 //////////////////////////////////////////////////////////////////////////
-
+///////////////////////////MOTOR FEEDBACK SETTINGS///////////////////////////////////
+#define MOTORFEEDBACK_DETECTION_ON		0x02
+#define MOTORFEEDBACK_DETECTION_CURRENT	0x01
+#define MOTORFEEDBACK_DETECTION_OFF		0x00
 //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
 struct bootloader_parameter
 {
 	uint32_t ulongintDiscard;
@@ -208,13 +213,14 @@ struct user_settings_parameter
 	uint16_t singlePhasingVoltage;			//2
 ////////////////////////////////////////////////////
 	uint8_t detectPhaseSequence;			//1
-
+////////////////////////////////////////////////////
+	uint8_t detectMotorFeedback;			//1
 
 	//uint8_t bypassAddress;				//1
 	//uint8_t jumperSettingAddress;			//1
-	//uint8_t dummy1;							//1
-	//uint8_t dummy2;							//1
-	//uint8_t dummy3;							//1
+	uint8_t dummy1;							//1
+	uint8_t dummy2;							//1
+	uint8_t dummy3;							//1
 
 }user_settings_parameter_struct;
 
@@ -288,6 +294,7 @@ void savePreventOverFlowSettings(bool flag);
 //void setJumperSettings(uint8_t jumperVal);
 bool setOverloadPer(uint8_t overloadPerValue);
 bool setUnderloadPer(uint8_t underloadPerValue);
+void saveMotorFeedbackDetectionSettings(uint8_t motorFeedbackDetection);
 void calcCurrentValues(void);
 void setUnderloadValue(uint32_t underValue);
 void setOverloadValue(uint32_t overValue);

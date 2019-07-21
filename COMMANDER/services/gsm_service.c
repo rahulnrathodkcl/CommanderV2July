@@ -34,8 +34,13 @@ void operateOnStagedEvent(void)
 				m2mEvent=true;
 				m2mEventStaged=false;
 			}
-			makeResponseAction();
 		}
+		else
+		{
+			actionType=stagedEventType;
+			eventStaged=false;
+		}
+		makeResponseAction();
 	}
 }
 
@@ -359,7 +364,7 @@ void processOnDTMF(char *dtmf_cmd)
 		if (dtmf == '1') //Motor On
 		{
 			subDTMF();
-			startMotor(true);
+			startMotor(true,false);
 		}
 		else if (dtmf == '2') //Motor Off
 		{
@@ -417,7 +422,7 @@ void processOnDTMF(char *dtmf_cmd)
 			// currentOperation = '1';   //m2m 1
 			saveAutoStartSettings(true);  //set AutoStart to True in EEPROM
 			resetAutoStart(true);
-			startMotor(false);
+			startMotor(false,false);
 			sendDTMFTone(0xFF);
 		}
 		else if(dtmf=='C')
@@ -696,6 +701,31 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 					strcpy(resep_msg,"DND : ");
 					strcat(resep_msg,received_command);
 					strcat(resep_msg," OK");
+				}
+			}
+		}
+	}
+	else if (StringstartsWith(received_command,"FDBK"))
+	{
+		if (strlen(received_command)>4)
+		{
+			memmove(received_command,received_command+4,strlen(received_command));
+			uint8_t fdbkValue = atoi(received_command);
+			if (fdbkValue <= MOTORFEEDBACK_DETECTION_ON)
+			{
+				if (fdbkValue == MOTORFEEDBACK_DETECTION_CURRENT)
+				{
+					if (!factory_settings_parameter_struct.ENABLE_CURRENT)
+					{
+						fdbkValue=MOTORFEEDBACK_DETECTION_OFF;
+					}
+				}
+				saveMotorFeedbackDetectionSettings(fdbkValue);
+				incomingSMSProcessed=true;
+				
+				if (response_sms_processed_cmd == true)
+				{
+					sprintf(resep_msg,"FDBK : %d", fdbkValue);
 				}
 			}
 		}
@@ -1517,7 +1547,7 @@ static void vTask_GSM_service(void *params)
 									setM2MRemoteVerified(true);
 									saveM2MSettings(true);
 									getActiveNumber(phone_number);
-									setCallStateOnLCD(LCDCALLSTATE_OUTGOINGSMS,phone_number,false);	
+									setCallStateOnLCD(LCDCALLSTATE_OUTGOINGSMS,phone_number,false);
 									gsm_send_sms(phone_number,"M2M TURNED ON");
 								}
 							}
@@ -1649,7 +1679,7 @@ static void vTask_GSM_service(void *params)
 }
 void start_gsm_service(void)
 {
-	xTaskCreate(vTask_GSM_service,NULL,(uint16_t)900,NULL,1,NULL);
+	xTaskCreate(vTask_GSM_service,NULL,(uint16_t)940,NULL,1,NULL);
 }
 
 bool busy(void)

@@ -190,6 +190,8 @@ void init_eeprom(void)
 		user_settings_parameter_struct.detectSinglePhasing			= true;
 		user_settings_parameter_struct.singlePhasingVoltage			= 80;
 		user_settings_parameter_struct.detectPhaseSequence			= true;
+		user_settings_parameter_struct.detectMotorFeedback			= MOTORFEEDBACK_DETECTION_CURRENT;
+		
 
 		memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
 		eeprom_emulator_write_page(USER_SETTING_PARAMETERS_PAGE, page_data);
@@ -740,6 +742,15 @@ void saveSinglePhasingVoltage(uint16_t voltage)
 void savePhaseSequenceProtectionSettings(bool phaseSequenceSetting)
 {
 	user_settings_parameter_struct.detectPhaseSequence= phaseSequenceSetting;
+	memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
+	eeprom_emulator_write_page(USER_SETTING_PARAMETERS_PAGE, page_data);
+	eeprom_emulator_commit_page_buffer();
+}
+
+
+void saveMotorFeedbackDetectionSettings(uint8_t motorFeedbackDetection)
+{
+	user_settings_parameter_struct.detectMotorFeedback = motorFeedbackDetection;
 	memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
 	eeprom_emulator_write_page(USER_SETTING_PARAMETERS_PAGE, page_data);
 	eeprom_emulator_commit_page_buffer();
