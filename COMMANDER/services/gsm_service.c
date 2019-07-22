@@ -1446,13 +1446,21 @@ static void vTask_GSM_service(void *params)
 				}
 				else
 				{
+					if(!getACPowerState() &&  gsm_module_sleep_elligible())
+					{
+						gsm_module_enter_sleep();
+					}
+					
 					if (currentStatus == 'N' && currentCallStatus == 'N')
 					{
-						////Update network
-						if (xTaskGetTickCount() - network_update_time>= (1*30*1000))
+						if(isGSMModuleAwake)
 						{
-							network_update_time = xTaskGetTickCount();
-							Signal_Strength = gsm_getsignalstrength();
+							////Update network
+							if (xTaskGetTickCount() - network_update_time>= (1*30*1000))
+							{
+								network_update_time = xTaskGetTickCount();
+								Signal_Strength = gsm_getsignalstrength();
+							}
 						}
 						
 						setObtainEvent();
@@ -1698,10 +1706,10 @@ bool gsm_checkSleepElligible(void)
 {
 	if (factory_settings_parameter_struct.ENABLE_M2M)
 	{
-		return(!commandsAccepted  && checkNotInCall() && !m2mEventStaged && !eventStaged && (lastGSMCommandTime-xTaskGetTickCount()>50000L));
+		return(!isGSMModuleAwake  && checkNotInCall() && !m2mEventStaged && !eventStaged);
 	}
 	else
 	{
-		return(!commandsAccepted  && checkNotInCall() && !eventStaged && (lastGSMCommandTime-xTaskGetTickCount()>50000L));
+		return(!isGSMModuleAwake  && checkNotInCall() && !eventStaged);
 	}
 }

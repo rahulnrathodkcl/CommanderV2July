@@ -14,9 +14,9 @@ static SemaphoreHandle_t gsm_busy_semaphore;
 
 
 /** FreeRTOS timer callback function, fired when the a timer period has elapsed.
- *
- *  \param[in]  timer  ID of the timer that has expired.
- */
+*
+*  \param[in]  timer  ID of the timer that has expired.
+*/
 static void gsm_timer_callback(TimerHandle_t timer)
 {
 }
@@ -39,19 +39,19 @@ static void gsm_rx_handler(uint8_t instance)
 {
 	SercomUsart *const usart_hw = &GSM_SERCOM->USART;
 	UNUSED(instance);
-	if (usart_hw->INTFLAG.reg & SERCOM_USART_INTFLAG_RXC) 
+	if (usart_hw->INTFLAG.reg & SERCOM_USART_INTFLAG_RXC)
 	{
 		/* Check if a data reception error occurred */
 		uint8_t rx_error = usart_hw->STATUS.reg &
 		(SERCOM_USART_STATUS_FERR | SERCOM_USART_STATUS_BUFOVF);
 		/* If error occurred clear the error flags, otherwise queue new data */
-		if (rx_error) 
+		if (rx_error)
 		{
 			usart_hw->STATUS.reg = rx_error;
-		} 
+		}
 		else
 		{
-			lastGSMCommandTime=xTaskGetTickCountFromISR();
+			//lastGSMCommandTime=xTaskGetTickCountFromISR();
 			uint8_t data = (usart_hw->DATA.reg & SERCOM_USART_DATA_MASK);
 			xQueueSendFromISR(gsm_rx_queue, &data, NULL);
 		}
@@ -63,7 +63,7 @@ static void gsm_ring_detect_pin_callback(void)
 	isRinging = port_pin_get_input_level(GSM_RING_PIN);
 }
 
-void gsm_init(void)	
+void gsm_init(void)
 {
 	struct port_config gsm_pin_config;
 	port_get_config_defaults(&gsm_pin_config);
@@ -81,7 +81,7 @@ void gsm_init(void)
 	config_extint_chan.gpio_pin_pull = EXTINT_PULL_UP;
 	config_extint_chan.detection_criteria = EXTINT_DETECT_BOTH;
 	extint_chan_set_config(GSM_RING_EIC_LINE, &config_extint_chan);
-		
+	
 	extint_chan_enable_callback(GSM_RING_EIC_LINE, EXTINT_CALLBACK_TYPE_DETECT);
 	extint_register_callback(gsm_ring_detect_pin_callback,GSM_RING_EIC_LINE,EXTINT_CALLBACK_TYPE_DETECT);
 	//////////////////////////////////////////////////////////////////////////
@@ -108,23 +108,53 @@ void gsm_init(void)
 	GSM_SERCOM->USART.INTENSET.reg=SERCOM_USART_INTFLAG_RXC;
 }
 
+void gsm_module_exit_sleep(bool calledFromRead)
+{
+	if (!isGSMModuleAwake)
+	{
+		port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
+		isGSMModuleAwake = true;
+		if (!calledFromRead)
+		{
+			vTaskDelay(100 / portTICK_PERIOD_MS);
+		}
+	}
+	
+	lastGSMCommunicationTime=xTaskGetTickCount();
+}
+
+void gsm_module_enter_sleep(void)
+{
+	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_DEACTIVE);
+	isGSMModuleAwake = false;
+}
+
+bool gsm_module_sleep_elligible(void)
+{
+	if(isGSMModuleAwake)
+	{
+		return ((xTaskGetTickCount() - lastGSMCommunicationTime)>=30000L);
+	}
+	return true;
+}
+
 enum gsm_error gsm_send_at_command(const char *const atcommand,const char* aResponExit,const uint32_t aTimeoutMax,const uint8_t aLenOut, char *aResponOut)
 {
 	
 	/* Try to acquire the command lock; if already busy with a command, abort */
-	if (xSemaphoreTake(gsm_busy_semaphore, 1) == pdFALSE) 
+	if (xSemaphoreTake(gsm_busy_semaphore, 1) == pdFALSE)
 	{
 		return GSM_ERROR_OPERATION_IN_PROGRESS;
 	}
 	
 	
 	/* Enable DTR and wait for the module to be ready to accept a command */
+	gsm_module_exit_sleep(false);
 	//port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
 	//vTaskDelay(100 / portTICK_PERIOD_MS);
-	
 	/*                                                                      */
 	
-	lastGSMCommandTime=xTaskGetTickCount();
+	//lastGSMCommandTime=xTaskGetTickCount();
 	
 	//////////////////////////////////////////////////////////////////////////
 	Flush_RX_Buffer();
@@ -148,7 +178,7 @@ enum gsm_error gsm_send_at_command(const char *const atcommand,const char* aResp
 	memset(aDataBuffer, '\0', MAX_BUFFER_TMP);
 	
 	/* Send the command to the GSM module when it is ready */
-	usart_write_buffer_wait(&gsm_usart, (uint8_t *)atcommand, strlen(atcommand));	
+	usart_write_buffer_wait(&gsm_usart, (uint8_t *)atcommand, strlen(atcommand));
 	
 	/* Start the timeout timer to ensure a timely response from the module */
 	xTimerChangePeriod(gsm_cmd_timeout_timer,(aTimeoutMax / portTICK_PERIOD_MS),portMAX_DELAY);
@@ -227,7 +257,7 @@ enum gsm_error gsm_is_network_registered(void)
 	errHomeNw = gsm_send_at_command((const char*)("AT+CREG?\r"), (const char*)"+CREG: 0,1",5000,0, NULL);
 	if (errHomeNw==GSM_ERROR_NONE)
 	{
-		return GSM_NETWORK_REGISTERED;	
+		return GSM_NETWORK_REGISTERED;
 	}
 	else
 	{
@@ -248,7 +278,7 @@ enum gsm_error gsm_is_network_registered(void)
 enum gsm_error gsm_set_baudrate(void)
 {
 	char baurate_at_command[20]={0};
-		
+	
 	sprintf(baurate_at_command, "AT+IPR=%d\r",GSM_BAUDRATE);
 	
 	return gsm_send_at_command((const char*)(baurate_at_command), (const char*)RESPONS_OK,5000,0, NULL);
@@ -416,25 +446,25 @@ enum gsm_error gsm_save_sms_settings_in_profile_1(void)
 }
 
 //return signal strenth Value between 0 to 5
-// 0 - No network 
+// 0 - No network
 // 5 - FULL network
- 
- /*
- 0 -115 dBm or less
- 1 -111 dBm
- 2...30 -110... -54 dBm
- 31 -52 dBm or greater
- 99 not known or not detectable
- 
- ////
- 
- 2--7     1
- 8--13    2
- 14--19   3
- 20--25   4
- 26--31   5
- 
- */
+
+/*
+0 -115 dBm or less
+1 -111 dBm
+2...30 -110... -54 dBm
+31 -52 dBm or greater
+99 not known or not detectable
+
+////
+
+2--7     1
+8--13    2
+14--19   3
+20--25   4
+26--31   5
+
+*/
 uint8_t gsm_getsignalstrength(void)
 {
 	
@@ -538,12 +568,12 @@ enum gsm_error gsm_disable_new_sms_message_indications(void)
 enum gsm_error gsm_send_sms(const char *phone_number, const char *message)
 {
 	/* Double-check the message length is acceptable (160 byte max payload) */
-	if (strlen(message) > 250) 
+	if (strlen(message) > 250)
 	{
 		return GSM_ERROR_MESSAGE_LENGTH;
 	}
 	/* Double-check the recipient phone number length */
-	if (strlen(phone_number) < 6) 
+	if (strlen(phone_number) < 6)
 	{
 		return GSM_ERROR_PHONE_NUMBER_LENGTH;
 	}
@@ -565,13 +595,13 @@ enum gsm_error gsm_send_sms(const char *phone_number, const char *message)
 		
 		snprintf((char*)cmdx, MAX_BUFFER, "%s\x1A\x0D",message);
 		
-	    err = gsm_send_at_command((const char*)cmdx, (const char*)RESPONS_OK,60000, 0, NULL);
+		err = gsm_send_at_command((const char*)cmdx, (const char*)RESPONS_OK,60000, 0, NULL);
 		if (err == GSM_ERROR_NONE)
 		{
 			free(cmdx);
 			return GSM_ERROR_NONE;
 		}
-		else 
+		else
 		{
 			free(cmdx);
 			return GSM_ERROR_SMS_SEND_FAILED;
@@ -625,7 +655,7 @@ uint8_t gsm_get_sms_index(uint8_t required_sms_status)
 			if(cmdx[i]==',')
 			{
 				counted_comma++;
-			} 
+			}
 		}
 		/*
 		+CMGL: 1,"REC READ","+918140200752","","18/06/26,11:50:27+22"
@@ -734,16 +764,16 @@ enum gsm_error gsm_read_sms(uint8_t position, char *phone_number, uint8_t max_ph
 		else
 		{
 			free(cmdx);
-			return GSM_ERROR_SMS_NOT_AVAILABLE; 
+			return GSM_ERROR_SMS_NOT_AVAILABLE;
 		}
 	}
 	else
 	{
 		free(cmdx);
-		return GSM_ERROR_SMS_NOT_AVAILABLE; 
+		return GSM_ERROR_SMS_NOT_AVAILABLE;
 	}
 	free(cmdx);
-	return GSM_ERROR_NONE; 
+	return GSM_ERROR_NONE;
 }
 
 
@@ -953,7 +983,7 @@ enum gsm_error gsm_config_module(void)
 														{
 															if (gsm_store_active_profile() == GSM_ERROR_NONE)
 															{
-																return GSM_ERROR_NONE; 
+																return GSM_ERROR_NONE;
 															}
 															else
 															{
@@ -962,7 +992,7 @@ enum gsm_error gsm_config_module(void)
 														}
 														//else
 														{
-														//	return GSM_ERROR_CONFIG_FAILED;
+															//	return GSM_ERROR_CONFIG_FAILED;
 														}
 													}
 													else
@@ -1032,8 +1062,10 @@ enum gsm_error gsm_config_module(void)
 bool gsm_read_response_line(char *buffer,uint8_t length)
 {
 	bool line_non_empty = false;
-	while (length > 1) 
+	while (length > 1)
 	{
+		gsm_module_exit_sleep(true);
+		
 		uint8_t curr_rx;
 		/* Fetch next buffered character received from the module */
 		if (xQueueReceive(gsm_rx_queue, &curr_rx, 500 / portTICK_PERIOD_MS) == pdFALSE)
@@ -1041,11 +1073,11 @@ bool gsm_read_response_line(char *buffer,uint8_t length)
 			return false;
 		}
 
-		if (curr_rx == '\n') 
+		if (curr_rx == '\n')
 		{
 			/* Ignore newline characters */
 		}
-		else if (curr_rx != '\r') 
+		else if (curr_rx != '\r')
 		{
 			/* Non end-of-command CR character */
 			*(buffer++) = curr_rx;
@@ -1091,7 +1123,7 @@ bool gsm_responseLine_isRinging(char *response)
 {
 	if (strstr(response,"RING"))
 	{
-		return true;	
+		return true;
 	}
 	else
 	{
@@ -1103,18 +1135,18 @@ bool gsm_responseLine_get_IncommingCallNo(char *response,char *phone_number)
 {
 	if(strstr(response,"+CLIP"))
 	{
-		  char *ptr_tocken;
-		  ptr_tocken = strtok(response,":"); 
-		  ptr_tocken = strtok(NULL,",");
-		  ptr_tocken = strtok(ptr_tocken,"\"");
-		  ptr_tocken = strtok(NULL,"\"");
-		  
-		  if (!strstr(ptr_tocken,"+"))
-		  {
-			  return false;
-		  }
-		  strcpy(phone_number, (char *)(ptr_tocken));		  
-		  return true;
+		char *ptr_tocken;
+		ptr_tocken = strtok(response,":");
+		ptr_tocken = strtok(NULL,",");
+		ptr_tocken = strtok(ptr_tocken,"\"");
+		ptr_tocken = strtok(NULL,"\"");
+		
+		if (!strstr(ptr_tocken,"+"))
+		{
+			return false;
+		}
+		strcpy(phone_number, (char *)(ptr_tocken));
+		return true;
 	}
 	else
 	{
@@ -1454,71 +1486,71 @@ enum gsm_error gsm_get_the_size_of_specified_file_in_ftp_server(uint32_t *file_s
 				case 61:
 				err =  GSM_FTP_NET_ERROR;
 				break;
-			
+				
 				case 62:
 				err = GSM_FTP_DNS_ERROR;
 				break;
-			
+				
 				case 63:
 				err = GSM_FTP_CONNECT_ERROR;
 				break;
-			
+				
 				case 64:
 				err = GSM_FTP_TIMEOUT_ERROR;
 				break;
-			
+				
 				case 65:
 				err = GSM_FTP_SERVER_ERROR;
 				break;
-			
+				
 				case 66:
 				err = GSM_FTP_OPERATION_NOT_ALLOW;
 				break;
-			
+				
 				case 70:
 				err = GSM_FTP_REPLAY_ERROR;
 				break;
-			
+				
 				case 71:
 				err = GSM_FTP_USER_ERROR;
 				break;
-			
+				
 				case 72:
 				err = GSM_FTP_PASSWORD_ERROR;
 				break;
-			
+				
 				case 73:
 				err = GSM_FTP_TYPE_ERROR;
 				break;
-			
+				
 				case 74:
 				err = GSM_FTP_REST_ERROR;
 				break;
-			
+				
 				case 75:
 				err = GSM_FTP_PASSIVE_ERROR;
 				break;
-			
+				
 				case 76:
 				err = GSM_FTP_ACTIVE_ERROR;
 				break;
-			
+				
 				case 77:
 				err = GSM_FTP_OPERATE_ERROR;
 				break;
-			
+				
 				case 78:
 				err = GSM_FTP_UPLOAD_ERROR;
 				break;
-			
+				
 				case 79:
 				err = GSM_FTP_DOWNLOAD_ERROR;
 				break;
-			
+				
 				case 86:
 				err = GSM_FTP_MANUAL_QUIT_ERROR;
 				break;
-			
+				
 				default:
 				err = GSM_FTP_UNKNOWN_ERROR;
 				break;
@@ -1540,7 +1572,7 @@ enum gsm_error gsm_open_ftp_get_session(void)
 }
 
 enum gsm_error gsm_read_ftp_download_data(uint16_t size_to_download, char *recv_data,uint16_t *downloaded_data_size)
-{	
+{
 	enum gsm_error err;
 	
 	char ftpget[20] = {0};
@@ -1577,7 +1609,7 @@ enum gsm_error gsm_read_ftp_download_data(uint16_t size_to_download, char *recv_
 			{
 				if (u8tTemp_Char == '\r')
 				{
-					xQueueReceive(gsm_rx_queue,&u8tTemp_Char, 10); //remove \n fom buffer				
+					xQueueReceive(gsm_rx_queue,&u8tTemp_Char, 10); //remove \n fom buffer
 					break;
 				}
 				else
@@ -1624,11 +1656,11 @@ enum gsm_error gsm_read_ftp_download_data(uint16_t size_to_download, char *recv_
 			}
 			else if (recv_data_size>0)
 			{
-				*downloaded_data_size = recv_data_size;			
-				xTimerChangePeriod(gsm_cmd_timeout_timer,((5*1000)/portTICK_PERIOD_MS),portMAX_DELAY);	
+				*downloaded_data_size = recv_data_size;
+				xTimerChangePeriod(gsm_cmd_timeout_timer,((5*1000)/portTICK_PERIOD_MS),portMAX_DELAY);
 				u8tRx_Index=0;
 				u8tTemp_Char=0;
-						
+				
 				while (1)
 				{
 					if(xTimerIsTimerActive(gsm_cmd_timeout_timer))
@@ -1655,7 +1687,7 @@ enum gsm_error gsm_read_ftp_download_data(uint16_t size_to_download, char *recv_
 						break;
 					}
 				}
-			}	
+			}
 		}
 		else
 		{

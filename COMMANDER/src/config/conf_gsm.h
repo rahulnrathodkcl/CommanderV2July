@@ -12,6 +12,9 @@
 /** Active level of the DTR pin to exit sleep mode. */
 #define GSM_DTR_PIN_ACTIVE             true
 
+/** Level of the DTR pin to enter sleep mode. */
+#define GSM_DTR_PIN_DEACTIVE           false
+
 
 /** \name GSM SERCOM USART configuration
  *  @{

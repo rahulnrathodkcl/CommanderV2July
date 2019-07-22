@@ -32,6 +32,11 @@
 /** Boolean variable to signal if the ringing on the RING pin */
 static bool isRinging;
 
+/** Boolean variable to signal if currently the SIM800C is active or is asleep*/
+static bool isGSMModuleAwake;
+
+/** uint32_t variable to store the time in ms when the last command was received or sent to GSM Module*/
+static uint32_t lastGSMCommunicationTime;
 
 enum gsm_error
 {
@@ -134,7 +139,6 @@ struct usart_module gsm_usart;
 
 #define GSM_TIMEOUT_PERIOD_TICKS       (5 * 1000 / portTICK_PERIOD_MS)
 
-static uint32_t lastGSMCommandTime;
 
 
 struct strRTC
@@ -152,6 +156,10 @@ void Flush_RX_Buffer(void);
 
 
 void gsm_init(void);
+void gsm_module_exit_sleep(bool calledFromRead);
+void gsm_module_enter_sleep(void);
+bool gsm_module_sleep_elligible(void);
+
 enum gsm_error gsm_send_at_command(const char *const command,const char* aResponExit,const uint32_t aTimeoutMax,const uint8_t aLenOut, char *aResponOut);
 enum gsm_error gsm_check_module(void);
 enum gsm_error gsm_disable_data_flow_control(void);
