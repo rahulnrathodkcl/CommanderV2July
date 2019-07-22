@@ -59,7 +59,7 @@ static void gsm_rx_handler(uint8_t instance)
 
 static void gsm_ring_detect_pin_callback(void)
 {
-	
+	isRinging = port_pin_get_input_level(GSM_RING_PIN);
 }
 
 void gsm_init(void)	
@@ -78,7 +78,7 @@ void gsm_init(void)
 	config_extint_chan.gpio_pin = GSM_RING_EIC_PIN;
 	config_extint_chan.gpio_pin_mux = GSM_RING_EIC_MUX;
 	config_extint_chan.gpio_pin_pull = EXTINT_PULL_UP;
-	config_extint_chan.detection_criteria = EXTINT_DETECT_FALLING;
+	config_extint_chan.detection_criteria = EXTINT_DETECT_BOTH;
 	extint_chan_set_config(GSM_RING_EIC_LINE, &config_extint_chan);
 		
 	extint_chan_enable_callback(GSM_RING_EIC_LINE, EXTINT_CALLBACK_TYPE_DETECT);

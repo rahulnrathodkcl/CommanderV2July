@@ -1366,7 +1366,7 @@ static void vTask_GSM_service(void *params)
 	soundWaitTime = 5;
 	bplaySound = false;
 	
-	actionType = 'N';
+	//actionType = 'N';
 	callCutWaitTime = 580;
 	nr = 0;
 	currentStatus = 'N';
@@ -1684,7 +1684,7 @@ void start_gsm_service(void)
 
 bool busy(void)
 {
-	return (inCall /*|| inInterrupt*/);
+	return (inCall || isRinging  /*|| inInterrupt*/);
 }
 
 bool checkNotInCall(void)

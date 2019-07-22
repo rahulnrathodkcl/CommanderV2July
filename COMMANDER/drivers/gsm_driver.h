@@ -23,6 +23,9 @@
 */
 #define RESPONS_ERROR	"ERROR"
 
+/** Boolean variable to signal if the ringing on the RING pin */
+static bool isRinging;
+
 enum gsm_error
 {
 	/** No error was encountered while issuing the command sequence. */

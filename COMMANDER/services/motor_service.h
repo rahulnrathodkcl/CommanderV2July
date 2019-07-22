@@ -48,6 +48,10 @@ volatile bool vBoolPhaseSeq;
 bool startTimerOn;
 uint32_t tempStartTimer;
 
+uint8_t fdbkRefCurrent;
+bool stopMotorCommandGiven;
+
+bool firstEvent;
 bool singlePhasingTimerOn;
 uint32_t tempSinglePhasingTimer;
 uint8_t singlePhasingTime;

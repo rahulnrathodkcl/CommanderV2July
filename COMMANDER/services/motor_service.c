@@ -970,13 +970,27 @@ void readSensorState(uint8_t *allPhase, bool *phaseSeq,bool *motor, bool *acPhas
 
 bool checkMotorStatusUsingCurrent(void)
 {
-	if (Analog_Parameter_Struct.Motor_Current_IntPart > 4)
+	if(stopMotorCommandGiven)
 	{
-		return true;
+		if(Analog_Parameter_Struct.Motor_Current_IntPart <= (fdbkRefCurrent/2))
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
 	else
 	{
-		return false;
+		if (Analog_Parameter_Struct.Motor_Current_IntPart > 4)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }
 
@@ -1271,6 +1285,7 @@ void startMotor(bool commanded, bool forcedStart)
 
 			STOP_RELAY_ON;
 			START_RELAY_ON;
+			stopMotorCommandGiven=false;
 			//MOTOR_ON_LED_ON;
 			tempStartSequenceTimer = xTaskGetTickCount();
 			startSequenceOn = true;
@@ -1308,7 +1323,12 @@ void stopMotor(bool commanded, bool forceStop,bool offButton)
 	if (forceStop || getMotorState())
 	{
 		singlePhasingTimerOn = false;
+		if (user_settings_parameter_struct.detectMotorFeedback == MOTORFEEDBACK_DETECTION_CURRENT)
+		{
+			fdbkRefCurrent = Analog_Parameter_Struct.Motor_Current_IntPart;
+		}
 		STOP_RELAY_OFF;
+		stopMotorCommandGiven=true;
 		tempStopSequenceTimer = xTaskGetTickCount();
 		stopSequenceOn = true;
 		setMotorState(false);
@@ -1362,7 +1382,8 @@ void terminateStopRelay(void)
 		//STOP_RELAY_ON;
 		//}
 		stopSequenceOn = false;
-		if (!getMotorState_from_pin())		//motor has turned off
+		stopMotorCommandGiven=true;
+		if(!getMotorState_from_pin())															//motor has turned off OR NOT
 		{
 			if (gotOffCommand)
 			{
@@ -1677,8 +1698,8 @@ static void vTask_MOTORCONTROL(void *params)
 	uint8_t last_comparison = AC_CHAN_STATUS_UNKNOWN;
 	
 	//sets the variable to store current ticks, so that we can delay first event operation
-	uint32_t delayForFirstEvent = xTaskGetTickCount();			
-	bool firstEvent = true;	
+	uint32_t delayForFirstEvent = xTaskGetTickCount();
+	firstEvent = true;
 	
 	last_comparison = ac_chan_get_status(&ac_instance,AC_CHAN_CHANNEL_0);
 	vTaskDelay(500/portTICK_PERIOD_MS);
@@ -1767,21 +1788,21 @@ static void vTask_MOTORCONTROL(void *params)
 		{
 			uint8_t tempEventOccured=eventOccured;
 			uint8_t tempButtonEventOccured=buttonEventOccured;
-		
+			
 			
 			if(tempEventOccured)
 			{
-					if(firstEvent)
+				if(firstEvent)
+				{
+					if(xTaskGetTickCount()-delayForFirstEvent>35000L)
 					{
-						if(xTaskGetTickCount()-delayForFirstEvent>35000L)
-						{
-							firstEvent = false;
-						}
+						firstEvent = false;
 					}
-					else
-					{
-						operateOnEvent();
-					}
+				}
+				else
+				{
+					operateOnEvent();
+				}
 			}
 			//if(tempButtonEventOccured)
 			//{
@@ -1822,6 +1843,12 @@ static void vTask_MOTORCONTROL(void *params)
 		{
 			operateOnStableLine();
 		}
+		
+		if(stopMotorCommandGiven && xTaskGetTickCount()-tempStopSequenceTimer>5000)
+		{
+			stopMotorCommandGiven=false;
+		}
+		
 		if(singlePhasingTimerOn)
 		{
 			bool b;
@@ -2027,7 +2054,7 @@ bool motor_checkSleepElligible(void)
 	}
 	
 	return (!getACPowerState() && !eventOccured && event && !waitStableLineOn && !singlePhasingTimerOn
-	&& !startTimerOn && !startSequenceOn && !stopSequenceOn);
+	&& !startTimerOn && !startSequenceOn && !stopSequenceOn && !firstEvent);
 	
 }
 
