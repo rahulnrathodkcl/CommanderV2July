@@ -51,6 +51,7 @@ static void gsm_rx_handler(uint8_t instance)
 		} 
 		else
 		{
+			lastGSMCommandTime=xTaskGetTickCountFromISR();
 			uint8_t data = (usart_hw->DATA.reg & SERCOM_USART_DATA_MASK);
 			xQueueSendFromISR(gsm_rx_queue, &data, NULL);
 		}
@@ -116,9 +117,14 @@ enum gsm_error gsm_send_at_command(const char *const atcommand,const char* aResp
 		return GSM_ERROR_OPERATION_IN_PROGRESS;
 	}
 	
+	
 	/* Enable DTR and wait for the module to be ready to accept a command */
 	//port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
 	//vTaskDelay(100 / portTICK_PERIOD_MS);
+	
+	/*                                                                      */
+	
+	lastGSMCommandTime=xTaskGetTickCount();
 	
 	//////////////////////////////////////////////////////////////////////////
 	Flush_RX_Buffer();
@@ -1054,7 +1060,6 @@ bool gsm_read_response_line(char *buffer,uint8_t length)
 	}
 
 	*(buffer) = '\0';
-	
 	return line_non_empty;
 }
 

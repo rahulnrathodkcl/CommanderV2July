@@ -1698,10 +1698,10 @@ bool gsm_checkSleepElligible(void)
 {
 	if (factory_settings_parameter_struct.ENABLE_M2M)
 	{
-		return(!commandsAccepted  && checkNotInCall() && !m2mEventStaged && !eventStaged);
+		return(!commandsAccepted  && checkNotInCall() && !m2mEventStaged && !eventStaged && (lastGSMCommandTime-xTaskGetTickCount()>50000L));
 	}
 	else
 	{
-		return(!commandsAccepted  && checkNotInCall() && !eventStaged);
+		return(!commandsAccepted  && checkNotInCall() && !eventStaged && (lastGSMCommandTime-xTaskGetTickCount()>50000L));
 	}
 }

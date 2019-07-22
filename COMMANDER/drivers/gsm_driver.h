@@ -13,6 +13,12 @@
 #define  SMS_READ   1
 #define  SMS_ALL    2
 
+
+/** SLEEP ENABLE FOR SIM800C */
+#define SLEEP_ENABLE_800C
+
+
+
 //respons ok / error
 /**
 @brief	Respon OK string
@@ -25,6 +31,7 @@
 
 /** Boolean variable to signal if the ringing on the RING pin */
 static bool isRinging;
+
 
 enum gsm_error
 {
@@ -126,6 +133,8 @@ enum gsm_error
 struct usart_module gsm_usart;
 
 #define GSM_TIMEOUT_PERIOD_TICKS       (5 * 1000 / portTICK_PERIOD_MS)
+
+static uint32_t lastGSMCommandTime;
 
 
 struct strRTC
