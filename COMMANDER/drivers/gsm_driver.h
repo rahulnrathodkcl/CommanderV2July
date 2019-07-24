@@ -29,8 +29,9 @@
 */
 #define RESPONS_ERROR	"ERROR"
 
+
 /** Boolean variable to signal if the ringing on the RING pin */
-static bool isRinging;
+volatile bool isRinging;
 
 /** Boolean variable to signal if currently the SIM800C is active or is asleep*/
 static bool isGSMModuleAwake;

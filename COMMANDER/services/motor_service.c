@@ -1,6 +1,11 @@
 #include "motor_service.h"
 
 static SemaphoreHandle_t xADC_Semaphore=NULL;
+
+volatile bool taskPSet;
+static TaskHandle_t motorTask=NULL;
+static TaskHandle_t fiftymsTask=NULL;
+
 static void vTask_MOTORCONTROL(void *params);
 static void button_detect_pin_callback(void);
 
@@ -432,7 +437,20 @@ void Configure_ADC0(void)
 	config.run_in_standby = true;
 	
 	adc_init(&adc_inst, ADC, &config);// Initialize the ADC
+	
+	/************************************************************************/
+	/*ADC Callback Setup                                                    */
+	adc_register_callback(&adc_inst, adc_buffer_complete_callback, ADC_CALLBACK_READ_BUFFER);
+	adc_enable_callback(&adc_inst, ADC_CALLBACK_READ_BUFFER);
+	/************************************************************************/
+	
 	adc_enable(&adc_inst);
+}
+
+void adc_buffer_complete_callback(const struct adc_module *const module)
+{
+	adc_read_buffer_done = true;
+	vTaskNotifyGiveFromISR(motorTask,NULL);
 }
 
 uint32_t Read_ADC0(uint32_t adc_pin,uint16_t samples)
@@ -455,36 +473,65 @@ uint32_t Read_ADC0(uint32_t adc_pin,uint16_t samples)
 
 uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 {
+	delay_ms(5);
+	
 	adc_set_positive_input(&adc_inst, adc_pin);
 	//read 500 samples
 	
 	uint16_t no_of_samples = 544;  //272 samples contain one full cycle
 	uint16_t samples_buffer[no_of_samples];
-	for (uint16_t i=0;i<no_of_samples;i++)
+	uint32_t temp = xTaskGetTickCount();
+	
+	/************************************************************************/
+	/*Using Buffered ADC to take Readings                                   */
+	/************************************************************************/
+	adc_read_buffer_done = false;
+	
+	while(adc_read_buffer_job(&adc_inst, samples_buffer, no_of_samples)!=STATUS_OK)
+	{}
+	ulTaskNotifyTake(pdTRUE,100/portTICK_PERIOD_MS);
+	
+	/************************************************************************/
+	
+	
+	//for (uint16_t i=0;i<no_of_samples;i++)
+	//{
+	//adc_start_conversion(&adc_inst);
+	//while (adc_read(&adc_inst, &samples_buffer[i]) != STATUS_OK) {
+	//}
+	//}
+
+	
+	if(adc_read_buffer_done)
 	{
-		adc_start_conversion(&adc_inst);
-		while (adc_read(&adc_inst, &samples_buffer[i]) != STATUS_OK) {
+		uint32_t square = 0;
+		double  mean = 0.0;
+		double  root = 0.0;
+		
+		for (uint16_t i = 0; i < no_of_samples; i++)
+		{
+			square += pow(samples_buffer[i], 2);
 		}
+		
+		mean = (square / (float)(no_of_samples));
+		// Calculate Root.
+		root = sqrt(mean);
+
+		//
+		temp = (root-20)*655/1000;
+		if (abs(Analog_Parameter_Struct.PhaseRY_Voltage - temp)> 80)
+		{
+			delay_us(1);
+		}
+		//
+		
+		return (uint32_t)root;
 	}
-	
-	uint32_t square = 0;
-	
-	double  mean = 0.0;
-	
-	double  root = 0.0;
-	
-	for (uint16_t i = 0; i < no_of_samples; i++)
+	else
 	{
-		square += pow(samples_buffer[i], 2);
+		return 0;
 	}
-	
-	mean = (square / (float)(no_of_samples));
-	
-	// Calculate Root.
-	root = sqrt(mean);
-	
-	return (uint32_t)root;
-	
+
 	//////arrange decending order
 	//uint16_t a,b,c;
 	//
@@ -698,6 +745,64 @@ void detect_battery_voltage_and_percentage(void)
 	}
 }
 
+
+void updateRMSValues(struct rmsVoltage *phaseRMSStruct)
+{
+	uint8_t cnt;
+	uint32_t result;
+	double mean = 0.0;
+	double root = 0.0;
+	for(cnt=0;cnt<NO_RMS_VOLTAGE_READINGS;cnt++)
+	{
+		if(phaseRMSStruct->voltRange[cnt]==0)
+		{
+			phaseRMSStruct->hasZeroReading=true;
+		}
+		result+=pow(phaseRMSStruct->voltRange[cnt],2);
+	}
+	mean= result / (float)NO_RMS_VOLTAGE_READINGS;
+	root = (uint32_t) (sqrt(result));
+	
+	phaseRMSStruct->rmsVoltage = (uint16_t) root;
+}
+
+uint16_t filterVoltage(enum phaseReading phase,uint16_t voltReading)
+{
+	struct rmsVoltage *p1;
+	if(phase==PHASE_RY)
+	{
+		p1 = &struct_rmsRY;
+	}
+	else if(phase==PHASE_YB)
+	{
+		p1 = &struct_rmsYB;
+	}
+	else if(phase==PHASE_BR)
+	{
+		p1 = &struct_rmsBR;
+	}
+	
+	p1->voltRange[p1->index%NO_RMS_VOLTAGE_READINGS]=voltReading;
+	p1->index = ((p1->index) + 1 )%NO_RMS_VOLTAGE_READINGS;
+	
+	updateRMSValues(p1);
+					
+	if(voltReading > p1->rmsVoltage)
+	{
+		if(p1->hasZeroReading)
+		{
+			return voltReading;
+		}
+		
+		if ((voltReading - p1->rmsVoltage)>(p1->rmsVoltage * 6/100))
+		{
+			return p1->rmsVoltage;
+		}
+	}
+	
+	return voltReading;
+}
+
 //Function to save the 3 phase voltage from ADC in to the structure, ADC values are filtered, and multiplied by factor here.
 void detect_Three_Phase_Voltage(void) {
 	
@@ -718,7 +823,6 @@ void detect_Three_Phase_Voltage(void) {
 				adcRY = 0;
 			}
 		}
-		
 		//int32_t adcYB = Read_ADC0(ADC_POSITIVE_INPUT_PIN18,2000);
 		int32_t adcYB = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN18);
 		adcYB = (adcYB-10);
@@ -734,6 +838,7 @@ void detect_Three_Phase_Voltage(void) {
 				adcYB = 0;
 			}
 		}
+
 		//int32_t adcBR =  Read_ADC0(ADC_POSITIVE_INPUT_PIN17,2000);
 		int32_t adcBR = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN17);
 		adcBR = (adcBR-12);
@@ -750,10 +855,13 @@ void detect_Three_Phase_Voltage(void) {
 			}
 		}
 		
+		Analog_Parameter_Struct.PhaseRY_Voltage = filterVoltage(PHASE_RY,adcRY);
+		Analog_Parameter_Struct.PhaseYB_Voltage = filterVoltage(PHASE_YB,adcYB);
+		Analog_Parameter_Struct.PhaseBR_Voltage = filterVoltage(PHASE_BR,adcBR);
 		
-		Analog_Parameter_Struct.PhaseRY_Voltage = adcRY;
-		Analog_Parameter_Struct.PhaseYB_Voltage = adcYB;
-		Analog_Parameter_Struct.PhaseBR_Voltage = adcBR;
+		//Analog_Parameter_Struct.PhaseRY_Voltage = adcRY;
+		//Analog_Parameter_Struct.PhaseYB_Voltage = adcYB;
+		//Analog_Parameter_Struct.PhaseBR_Voltage = adcBR;
 		
 		set_Three_Phase_State_From_Voltage();
 		xSemaphoreGive(xADC_Semaphore);
@@ -820,6 +928,21 @@ void detect_Motor_Current(void){
 		Analog_Parameter_Struct.Motor_Current_DecPart = ADCcurrent%100;
 		ucharCurrent_Detect_Flag = 0;												//reset the flag, to disable current reading for next 500ms
 	}
+}
+
+/************************************************************************/
+/* To Calculate Power Consumption of Motor                              */
+/************************************************************************/
+void calcPowerConsumption() 
+{
+	uint16_t avgVotlage = Analog_Parameter_Struct.PhaseRY_Voltage + Analog_Parameter_Struct.PhaseYB_Voltage + Analog_Parameter_Struct.PhaseBR_Voltage;
+	
+	double result = (avgVotlage/(float)3) * (Analog_Parameter_Struct.Motor_Current/(float)100);
+	result = sqrt(3) * result * 85 / (float)100;
+
+	Analog_Parameter_Struct.Motor_Power = (uint32_t) result;
+	Analog_Parameter_Struct.Motor_Power_IntPart = (uint32_t) result / 100;
+	Analog_Parameter_Struct.Motor_Power_DecPart =  (uint32_t) result % 100;
 }
 
 //Function to check if the New Current Reading should be read
@@ -1594,7 +1717,7 @@ void SIMEventManager(void)
 
 void checkCurrentConsumption(void)
 {
-	if(startSequenceOn || stopSequenceOn || !getMotorState() || !(user_settings_parameter_struct.currentDetectionAddress) || starDeltaTimerOn)
+	if(startSequenceOn || stopSequenceOn || !getMotorState() || !(user_settings_parameter_struct.currentDetectionAddress))
 	{
 		return;
 	}
@@ -1640,7 +1763,12 @@ void checkCurrentConsumption(void)
 	{
 		temp2 = CR_OVER;
 	}
-	else if(temp < user_settings_parameter_struct.underloadAddress && !enableCurrentBuffer)		// only consider noLoad after 30 secs
+	else if(!enableCurrentBuffer && temp < user_settings_parameter_struct.underloadAddress)		// only consider noLoad after 30 secs
+	{
+		temp2 = CR_UNDER;
+		overLoadDetectValue=overLoadDetectValue>>2;
+	}
+	else if(starDeltaTimerOn && enableCurrentBuffer && temp < (user_settings_parameter_struct.underloadAddress>>1))
 	{
 		temp2 = CR_UNDER;
 		overLoadDetectValue=overLoadDetectValue>>2;

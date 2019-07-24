@@ -191,7 +191,7 @@ void init_eeprom(void)
 		user_settings_parameter_struct.singlePhasingVoltage			= 80;
 		user_settings_parameter_struct.detectPhaseSequence			= true;
 		user_settings_parameter_struct.detectMotorFeedback			= MOTORFEEDBACK_DETECTION_CURRENT;
-		
+		user_settings_parameter_struct.over_under_DetectionMethod		= MOTOR_UNDEROVER_DETECTION_CURRENT;
 
 		memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
 		eeprom_emulator_write_page(USER_SETTING_PARAMETERS_PAGE, page_data);

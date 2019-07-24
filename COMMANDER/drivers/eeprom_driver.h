@@ -62,6 +62,16 @@ uint8_t page_data[EEPROM_PAGE_SIZE];
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
+
+/************************************************************************/
+/* MOTOR OVER UNDER DETECTION DEFINITIONS                                */
+#define MOTOR_UNDEROVER_DETECTION_POWER 0x01
+#define MOTOR_UNDEROVER_DETECTION_CURRENT 0x00
+/************************************************************************/
+
+
+
+
 struct bootloader_parameter
 {
 	uint32_t ulongintDiscard;
@@ -216,11 +226,13 @@ struct user_settings_parameter
 ////////////////////////////////////////////////////
 	uint8_t detectMotorFeedback;			//1
 
+	uint8_t over_under_DetectionMethod;/**  Detection of Method for Motor Underload,Overload; Power or Current*/			//1
+
 	//uint8_t bypassAddress;				//1
 	//uint8_t jumperSettingAddress;			//1
 	uint8_t dummy1;							//1
 	uint8_t dummy2;							//1
-	uint8_t dummy3;							//1
+	//uint8_t dummy3;							//1
 
 }user_settings_parameter_struct;
 
@@ -243,7 +255,6 @@ struct factory_settings_parameter
 	char DeviceID_ee[20];					//20
 	
 }factory_settings_parameter_struct;
-
 
 void configure_eeprom(void);
 void config_mobile_no_ee(const uint8_t page_loc,const char *mobile_number);

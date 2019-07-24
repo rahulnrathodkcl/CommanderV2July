@@ -31,6 +31,24 @@
 #define ME_SERVICING			0x02
 #define ME_NOTAVAILABLE			0x03
 
+
+bool adc_read_buffer_done;
+#define NO_RMS_VOLTAGE_READINGS 3
+struct rmsVoltage
+{
+	uint16_t voltRange[NO_RMS_VOLTAGE_READINGS];
+	uint16_t rmsVoltage;
+	uint8_t index;	
+	bool hasZeroReading;
+}struct_rmsRY,struct_rmsYB,struct_rmsBR;
+
+enum phaseReading
+{
+	PHASE_RY,
+	PHASE_YB,
+	PHASE_BR,
+};
+
 uint32_t lastCurrentReadingTime;
 uint32_t currentEventFilterTempTime;
 bool enableCurrentBuffer;
@@ -241,7 +259,16 @@ struct Analog_Parameter
 	volatile uint32_t Battery_Voltage;
 	volatile uint8_t Battery_percentage;
 	
+	volatile uint32_t Motor_Power;
+	volatile uint16_t Motor_Power_IntPart;
+	volatile uint32_t Motor_Power_DecPart;
+	
 }Analog_Parameter_Struct;
+
+void adc_buffer_complete_callback(const struct adc_module *const module);
+
+uint16_t filterVoltage(enum phaseReading phase,uint16_t voltReading);
+void updateRMSValues(struct rmsVoltage *phaseRMSStruct);
 
 
 void readOverHeadWaterSensorState(bool *olow,bool *ohigh);
@@ -319,8 +346,7 @@ void setDisplayPause(bool);
 
 void setCallStateOnLCD(uint8_t callState,char* number,bool usePrevious);
 
-volatile bool taskPSet;
-TaskHandle_t motorTask;
-TaskHandle_t fiftymsTask;
+
+
 
 #endif /* MOTOR_SERVICE_H_ */
