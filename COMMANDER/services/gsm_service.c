@@ -570,8 +570,8 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 	{
 		response_sms_processed_cmd=true;
 		incomingSMSProcessed=true;
-		
-		strcpy(resep_msg,factory_settings_parameter_struct.DeviceID_ee);
+		sprintf(resep_msg,"%lu",factory_settings_parameter_struct.DeviceId_ee);
+		//strcpy(resep_msg,factory_settings_parameter_struct.DeviceID_ee);
 
 		//sprintf(resep_msg,"Software:%s\nModel:%d\nDeviceId:%lu\nHW:%d",
 		//SOFTWARE_VER,factory_parameter_struct.u16tmodelNo,factory_parameter_struct.u32deviceId,
@@ -726,6 +726,27 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 				if (response_sms_processed_cmd == true)
 				{
 					sprintf(resep_msg,"FDBK : %d", fdbkValue);
+				}
+			}
+		}
+	}
+	else if (StringstartsWith(received_command,"UOMETHOD"))
+	{
+		if (strlen(received_command)>8)
+		{
+			memmove(received_command,received_command+8,strlen(received_command));
+			
+			if(factory_settings_parameter_struct.ENABLE_CURRENT && (received_command[0]=='P' || received_command[0]=='C'))
+			{
+				saveResponseSettings((char)received_command);  //save specific RESPONSE settings
+				
+				incomingSMSProcessed=true;
+				
+				if (response_sms_processed_cmd == true)
+				{
+					strcpy(resep_msg,"UOMETHOD : ");
+					strcat(resep_msg,received_command);
+					strcat(resep_msg," OK");
 				}
 			}
 		}
@@ -1355,6 +1376,7 @@ static void vTask_GSM_service(void *params)
 	
 	initialized = false;
 	
+	
 	inCall=false;
 	simReInit=false;
 	
@@ -1379,6 +1401,12 @@ static void vTask_GSM_service(void *params)
 	stagedEventType = 'N';
 	isRegisteredNumber=false;
 	retries=0;
+	
+	isGSMModuleAwake=false;
+	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
+	lastGSMCommunicationTime=0;
+	gsm_module_exit_sleep(false);				//to switch DTR pin so that sim remains active 
+				
 	if (factory_settings_parameter_struct.ENABLE_CURRENT)
 	{
 		zeroPressed=false;
@@ -1409,6 +1437,7 @@ static void vTask_GSM_service(void *params)
 		{
 			if (boolGsm_config_flag == false)
 			{
+				
 				if (gsm_is_network_registered() == GSM_NETWORK_REGISTERED)
 				{
 					if(gsm_config_module()==GSM_ERROR_NONE)
@@ -1446,7 +1475,7 @@ static void vTask_GSM_service(void *params)
 				}
 				else
 				{
-					if(!getACPowerState() &&  gsm_module_sleep_elligible())
+					if(!getACPowerState() &&  isGSMModuleAwake && gsm_module_sleep_elligible())
 					{
 						gsm_module_enter_sleep();
 					}
@@ -1521,12 +1550,14 @@ static void vTask_GSM_service(void *params)
 							StringtoUpperCase(Received_SMS);
 							
 							//char passCode[19];
-							//sprintf(passCode,"~%010lu%6lu",factory_settings_parameter_struct.DeviceID_ee,factory_settings_parameter_struct.dateCode);		//generate pass Phrase
+							//uint32_t pCodeint = factory_settings_parameter_struct.DeviceId_ee + factory_settings_parameter_struct.dateCode;
+							//uint32_t pcodeInt = pCodeint % 1000000L; 
 							//
+							//sprintf(passCode,"~%6lu",pcodeInt);		//generate pass Phrase							
 							//if(strstr(Received_SMS,passCode))							//check passCode exists
 							//{
-							//memmove(Received_SMS,Received_SMS+17,strlen(Received_SMS));		//discard passPhrase
-							//admin = true;													//set admin as true as passCode matches
+								//memmove(Received_SMS,Received_SMS+7,strlen(Received_SMS));		//discard passPhrase
+								//admin = true;													//set admin as true as passCode matches
 							//}
 
 							if (admin || primaryUser || alterUsr)

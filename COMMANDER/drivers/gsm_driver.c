@@ -51,16 +51,18 @@ static void gsm_rx_handler(uint8_t instance)
 		}
 		else
 		{
+
 			//lastGSMCommandTime=xTaskGetTickCountFromISR();
 			uint8_t data = (usart_hw->DATA.reg & SERCOM_USART_DATA_MASK);
 			xQueueSendFromISR(gsm_rx_queue, &data, NULL);
+			gsm_module_exit_sleep(true);
 		}
 	}
 }
 
 static void gsm_ring_detect_pin_callback(void)
 {
-	isRinging = port_pin_get_input_level(GSM_RING_PIN);
+	isRinging = !port_pin_get_input_level(GSM_RING_PIN);
 }
 
 void gsm_init(void)
@@ -133,7 +135,9 @@ bool gsm_module_sleep_elligible(void)
 {
 	if(isGSMModuleAwake)
 	{
-		return ((xTaskGetTickCount() - lastGSMCommunicationTime)>=30000L);
+		bool ret=false;
+		ret= ((xTaskGetTickCount() - lastGSMCommunicationTime)>=20000L);
+		return ret;
 	}
 	return true;
 }
@@ -1064,7 +1068,6 @@ bool gsm_read_response_line(char *buffer,uint8_t length)
 	bool line_non_empty = false;
 	while (length > 1)
 	{
-		gsm_module_exit_sleep(true);
 		
 		uint8_t curr_rx;
 		/* Fetch next buffered character received from the module */

@@ -1,8 +1,9 @@
 #include "motor_service.h"
 
 static SemaphoreHandle_t xADC_Semaphore=NULL;
+static SemaphoreHandle_t xButton_Semaphore=NULL;
 
-volatile bool taskPSet;
+static bool taskPSet;
 static TaskHandle_t motorTask=NULL;
 static TaskHandle_t fiftymsTask=NULL;
 
@@ -745,23 +746,34 @@ void detect_battery_voltage_and_percentage(void)
 	}
 }
 
+void initPhaseRMStruct(struct rmsVoltage *phaseRMSStruct)
+{
+	phaseRMSStruct->hasZeroReading = true;
+	phaseRMSStruct->index=0;
+	phaseRMSStruct->rmsVoltage=0;
+	for (uint8_t cnt =0;cnt< NO_RMS_VOLTAGE_READINGS;cnt++)
+	{
+		phaseRMSStruct->voltRange[cnt]=0;
+	}
+}
 
 void updateRMSValues(struct rmsVoltage *phaseRMSStruct)
 {
 	uint8_t cnt;
-	uint32_t result;
+	uint32_t result=0;
 	double mean = 0.0;
 	double root = 0.0;
+	phaseRMSStruct->hasZeroReading=false;
 	for(cnt=0;cnt<NO_RMS_VOLTAGE_READINGS;cnt++)
 	{
 		if(phaseRMSStruct->voltRange[cnt]==0)
 		{
 			phaseRMSStruct->hasZeroReading=true;
 		}
-		result+=pow(phaseRMSStruct->voltRange[cnt],2);
+		result= result + pow(phaseRMSStruct->voltRange[cnt],2);
 	}
 	mean= result / (float)NO_RMS_VOLTAGE_READINGS;
-	root = (uint32_t) (sqrt(result));
+	root = (uint32_t) (sqrt(mean));
 	
 	phaseRMSStruct->rmsVoltage = (uint16_t) root;
 }
@@ -787,16 +799,24 @@ uint16_t filterVoltage(enum phaseReading phase,uint16_t voltReading)
 	
 	updateRMSValues(p1);
 					
-	if(voltReading > p1->rmsVoltage)
+	//if(voltReading > p1->rmsVoltage)
 	{
 		if(p1->hasZeroReading)
 		{
 			return voltReading;
 		}
 		
-		if ((voltReading - p1->rmsVoltage)>(p1->rmsVoltage * 6/100))
+		//if ((voltReading - p1->rmsVoltage)>(p1->rmsVoltage * 6/100))
+		//{
+			//return p1->rmsVoltage;
+		//}
+		if((p1->rmsVoltage - voltReading)<(p1->rmsVoltage * 10/100))
 		{
 			return p1->rmsVoltage;
+		}
+		else
+		{
+			return voltReading;
 		}
 	}
 	
@@ -927,13 +947,14 @@ void detect_Motor_Current(void){
 		Analog_Parameter_Struct.Motor_Current_IntPart = ADCcurrent/100;
 		Analog_Parameter_Struct.Motor_Current_DecPart = ADCcurrent%100;
 		ucharCurrent_Detect_Flag = 0;												//reset the flag, to disable current reading for next 500ms
+		calcPowerConsumption();
 	}
 }
 
 /************************************************************************/
 /* To Calculate Power Consumption of Motor                              */
 /************************************************************************/
-void calcPowerConsumption() 
+void calcPowerConsumption(void) 
 {
 	uint16_t avgVotlage = Analog_Parameter_Struct.PhaseRY_Voltage + Analog_Parameter_Struct.PhaseYB_Voltage + Analog_Parameter_Struct.PhaseBR_Voltage;
 	
@@ -941,8 +962,8 @@ void calcPowerConsumption()
 	result = sqrt(3) * result * 85 / (float)100;
 
 	Analog_Parameter_Struct.Motor_Power = (uint32_t) result;
-	Analog_Parameter_Struct.Motor_Power_IntPart = (uint32_t) result / 100;
-	Analog_Parameter_Struct.Motor_Power_DecPart =  (uint32_t) result % 100;
+	Analog_Parameter_Struct.Motor_Power_IntPart = (uint32_t) result / 1000;
+	Analog_Parameter_Struct.Motor_Power_DecPart =  (uint32_t) result % 1000;
 }
 
 //Function to check if the New Current Reading should be read
@@ -954,7 +975,6 @@ bool should_Detect_New_Current(void){
 	
 	//return (should_Detect_New_Voltage());
 }
-
 
 bool getACPowerState(void)
 {
@@ -1068,6 +1088,7 @@ void readSensorState(uint8_t *allPhase, bool *phaseSeq,bool *motor, bool *acPhas
 	// if Motor Feedback is to be detected using HW Feedback Circuit
 	else if(user_settings_parameter_struct.detectMotorFeedback == MOTORFEEDBACK_DETECTION_ON)
 	{
+		*motor  = !(port_pin_get_input_level(PIN_MOTOR_FEEDBACK));
 		*motor  = !(port_pin_get_input_level(PIN_MOTOR_FEEDBACK));
 	}
 
@@ -1481,7 +1502,7 @@ void unknownMotorOff(void)
 	// waitCheckACTimerOn = false;
 	//report to SIM Motor Off due to Unknown Reason
 	stopMotor(false,true,false);
-	simEventTemp[2] = registerEvent('U');
+	simEventTemp[2] = registerEvent('_');
 }
 
 bool singlePhasingTimerOver(void)
@@ -1652,7 +1673,7 @@ void voltageOnCall(void)
 {
 	char voltFiles[13];
 	//change the below string seq to speak R Y B instead of 0
-	sprintf(voltFiles,"0%lu0%lu0%lu",Analog_Parameter_Struct.PhaseRY_Voltage,Analog_Parameter_Struct.PhaseYB_Voltage,Analog_Parameter_Struct.PhaseBR_Voltage);
+	sprintf(voltFiles,"]%lu{%lu}%lu",Analog_Parameter_Struct.PhaseRY_Voltage,Analog_Parameter_Struct.PhaseYB_Voltage,Analog_Parameter_Struct.PhaseBR_Voltage);
 	playRepeatedFiles(voltFiles);
 }
 
@@ -1860,6 +1881,10 @@ static void vTask_MOTORCONTROL(void *params)
 	setAllPhaseState(false); // allPhase = false;
 	setMotorState(false);// mFeedback = false;
 	setACPowerState(false);//  phaseAC = false;
+
+	initPhaseRMStruct(&struct_rmsRY);
+	initPhaseRMStruct(&struct_rmsYB);
+	initPhaseRMStruct(&struct_rmsBR);
 	
 	lastPressTime=0;
 	lastButtonEvent=0;
@@ -1879,7 +1904,7 @@ static void vTask_MOTORCONTROL(void *params)
 	}
 	simEvent[0] = 'N';
 	simEvent[1] = 'P';
-	simEvent[2] = 'U';
+	simEvent[2] = '_';					//chnage the recording when playing from flash, as sim800c does not have enough space right now.
 	simEvent[3] = 'F';
 	simEvent[4] = 'G';
 	simEvent[5] = 'L';
@@ -1905,12 +1930,13 @@ static void vTask_MOTORCONTROL(void *params)
 	
 	for (;;)
 	{
-		
+		xSemaphoreTake(xButton_Semaphore, portMAX_DELAY);
 		if(taskPSet)
 		{
 			vTaskPrioritySet(NULL,1);
 			taskPSet=false;
 		}
+		xSemaphoreGive(xButton_Semaphore);
 		
 		if(!startSequenceOn && !stopSequenceOn)
 		{
@@ -1929,7 +1955,19 @@ static void vTask_MOTORCONTROL(void *params)
 				}
 				else
 				{
-					operateOnEvent();
+					
+					if(motorFeedbackEvent)
+					{
+						if((xTaskGetTickCount()-motorFeedbackEventTime>1800))
+						{
+							motorFeedbackEvent=false;
+							operateOnEvent();
+						}
+					}
+					else
+					{
+						operateOnEvent();
+					}
 				}
 			}
 			//if(tempButtonEventOccured)
@@ -2048,6 +2086,8 @@ void start_motor_service(void)
 	// Whenever xSemaphoreTake is executed on xADC_Semaphore in task other than which xADC_Semaphore is defined in, than the MCU hangs.
 	vSemaphoreCreateBinary(xADC_Semaphore);
 	
+	vSemaphoreCreateBinary(xButton_Semaphore);
+	
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////
@@ -2078,7 +2118,7 @@ void start_motor_service(void)
 	
 	config_extint_chan.gpio_pin = MOTOR_FEEDBACK_EIC_PIN;
 	config_extint_chan.gpio_pin_mux = MOTOR_FEEDBACK_EIC_MUX;
-	config_extint_chan.gpio_pin_pull = EXTINT_PULL_UP;
+	config_extint_chan.gpio_pin_pull = EXTINT_PULL_NONE;
 	config_extint_chan.detection_criteria = EXTINT_DETECT_BOTH;
 	extint_chan_set_config(MOTOR_FEEDBACK_EIC_LINE, &config_extint_chan);
 	
@@ -2133,8 +2173,7 @@ void start_motor_service(void)
 		xTaskCreate(Water_Level_Task,NULL,(uint16_t)700,NULL,1,NULL);
 	}
 	
-
-	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)720,NULL,1, &motorTask);
+	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)750,NULL,1, &motorTask);
 
 }
 
@@ -2246,6 +2285,8 @@ void ac_detect_callback(struct ac_module *const module_inst)
 static void motor_feedback_callback(void)
 {
 	eventOccured = true;
+	motorFeedbackEvent=true;
+	motorFeedbackEventTime=xTaskGetTickCountFromISR();
 }
 
 void configure_event(void)
@@ -2393,11 +2434,15 @@ static void vTask_50ms_Timer(void *params)
 		{
 			operateOnButtonEvent();
 		}
+
+		xSemaphoreTake(xButton_Semaphore,portMAX_DELAY);
 		if(lastButtonEvent>0)
 		{
 			taskPSet=true;
 			vTaskPrioritySet(motorTask,2);
 		}
+		xSemaphoreGive(xButton_Semaphore);
+	
 	}
 }
 

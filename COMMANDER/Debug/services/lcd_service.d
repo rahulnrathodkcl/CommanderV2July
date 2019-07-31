@@ -209,7 +209,8 @@ services/lcd_service.d services/lcd_service.o: ../services/lcd_service.c \
  ../src/ASF/sam0/drivers/wdt/wdt_callback.h \
  ../src/ASF/sam0/drivers/wdt/wdt.h \
  ../src/ASF/sam0/drivers/wdt/wdt_callback.h ../src/config/conf_gsm.h \
- ../drivers/eeprom_driver.h
+ ../drivers/eeprom_driver.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\_stdint.h
 
 ../services/lcd_service.h:
 
@@ -664,3 +665,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/config/conf_gsm.h:
 
 ../drivers/eeprom_driver.h:
+
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\_stdint.h:

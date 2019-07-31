@@ -239,7 +239,6 @@ struct user_settings_parameter
 
 struct factory_settings_parameter
 {
-	
 	//////////////////////////////////////////////////////////////////////////
 	uint8_t u8tfirst_time_write_ee;			//1
 	//////////////////////////////////////////////////////////////////////////
@@ -252,7 +251,10 @@ struct factory_settings_parameter
 	uint8_t DUAL_LEVEL;						//1
 	uint8_t NOLEVELCHANGECALL;				//1
 	
-	char DeviceID_ee[20];					//20
+	uint32_t DeviceId_ee;					//4
+	//char DeviceID_ee[20];					//20
+	//uint32_t DeviceId_ee;					//4
+	uint32_t dateCode;						//4
 	
 }factory_settings_parameter_struct;
 

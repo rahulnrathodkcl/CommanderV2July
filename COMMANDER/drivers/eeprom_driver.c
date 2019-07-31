@@ -190,7 +190,7 @@ void init_eeprom(void)
 		user_settings_parameter_struct.detectSinglePhasing			= true;
 		user_settings_parameter_struct.singlePhasingVoltage			= 80;
 		user_settings_parameter_struct.detectPhaseSequence			= true;
-		user_settings_parameter_struct.detectMotorFeedback			= MOTORFEEDBACK_DETECTION_CURRENT;
+		user_settings_parameter_struct.detectMotorFeedback			= MOTORFEEDBACK_DETECTION_ON;
 		user_settings_parameter_struct.over_under_DetectionMethod		= MOTOR_UNDEROVER_DETECTION_CURRENT;
 
 		memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
@@ -211,8 +211,11 @@ void init_eeprom(void)
 		factory_settings_parameter_struct.ENABLE_M2M				= false;
 		factory_settings_parameter_struct.NOLEVELCHANGECALL			= false;
 		
-		memset(factory_settings_parameter_struct.DeviceID_ee, '\0', sizeof(factory_settings_parameter_struct.DeviceID_ee));
-		strcpy(factory_settings_parameter_struct.DeviceID_ee,"0000000000");
+		factory_settings_parameter_struct.DeviceId_ee				= 0;
+		factory_settings_parameter_struct.dateCode					= 0;
+
+		//memset(factory_settings_parameter_struct.DeviceID_ee, '\0', sizeof(factory_settings_parameter_struct.DeviceID_ee));
+		//strcpy(factory_settings_parameter_struct.DeviceID_ee,"0000000000");
 		
 		memcpy(page_data,&factory_settings_parameter_struct,sizeof(factory_settings_parameter_struct));
 		eeprom_emulator_write_page(FACTORY_SETTING_PARAMETERS_PAGE, page_data);
@@ -800,7 +803,8 @@ void setCurrentDetection(bool cValue)
 
 char *getDeviceId(char *deviceID)
 {
-	strcpy(deviceID,factory_settings_parameter_struct.DeviceID_ee);
+	sprintf(deviceID,"%d",factory_settings_parameter_struct.DeviceId_ee);
+	//strcpy(deviceID,factory_settings_parameter_struct.DeviceID_ee);
 	return deviceID;
 }
 

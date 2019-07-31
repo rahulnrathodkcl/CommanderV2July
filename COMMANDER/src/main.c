@@ -105,5 +105,6 @@ void gotoSleep(void)
 	LCD_PWR_DIS();
 	
 	lcd_in_sleep = true;
+	setNetworkCharacter=true;
 	system_sleep();
 }

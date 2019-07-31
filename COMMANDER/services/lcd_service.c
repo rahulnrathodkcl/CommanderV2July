@@ -1,4 +1,5 @@
 #include "lcd_service.h"
+#include <sys\_stdint.h>
 
 static void lcd_displaying_task(void *params);
 static QueueHandle_t xfour_Second_Queue;
@@ -10,7 +11,7 @@ static void lcd_displaying_task(void *params)
 	UNUSED(params);
 	
 	lcd_in_sleep = false;
-	
+	setNetworkCharacter=true;
 	LCD_PWR_CONFIG();
 	LCD_PWR_EN();
 	vTaskDelay(500);
@@ -18,81 +19,13 @@ static void lcd_displaying_task(void *params)
 	LCD_init();
 	
 	uint8_t screen=1;
-	
 	bool four_sec_timer_is_active = true;
 	bool two_sec_timer_is_active = false;
 	
 	uint8_t time=0;
 	
-	byte Network_0[8]={
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000
-	};
 	
-	byte Network_1[8]={
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B11111,
-		0B11111
-	};
-	byte Network_2[8]={
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B11111,
-		0B11111,
-		0B11111
-	};
-	byte Network_3[8]={
-		0B00000,
-		0B00000,
-		0B00000,
-		0B00000,
-		0B11111,
-		0B11111,
-		0B11111,
-		0B11111
-	};
-	byte Network_4[8]={
-		0B00000,
-		0B00000,
-		0B11111,
-		0B11111,
-		0B11111,
-		0B11111,
-		0B11111,
-		0B11111
-	};
-
-	byte Network_5[8]={
-		0B11111,
-		0B11111,
-		0B11111,
-		0B11111,
-		0B11111,
-		0B11111,
-		0B11111,
-		0B11111
-	};
 	
-	LCD_Create_Custom_createChar(0,Network_0);
-	LCD_Create_Custom_createChar(1,Network_1);
-	LCD_Create_Custom_createChar(2,Network_2);
-	LCD_Create_Custom_createChar(3,Network_3);
-	LCD_Create_Custom_createChar(4,Network_4);
-	LCD_Create_Custom_createChar(5,Network_5);
 	
 	LCD_clear();
 	LCD_setCursor(0,0);
@@ -122,183 +55,300 @@ static void lcd_displaying_task(void *params)
 			LCD_init();
 		}
 		
-		switch(screen)
+		if(setNetworkCharacter)
 		{
-			case  1:
-			{
-				LCD_setCursor(0,0);
-				lcd_printf("VRY   VYB   VBR ");
-				LCD_setCursor(0,1);
-				lcd_printf("%03lu   ",(Analog_Parameter_Struct.PhaseRY_Voltage));
-				lcd_printf("%03lu   ",(Analog_Parameter_Struct.PhaseYB_Voltage));
-				lcd_printf("%03lu ",(Analog_Parameter_Struct.PhaseBR_Voltage));
-				break;
-			}
-			case  2:
-			{
-				if(!getMotorState())
-				{
-					LCD_setCursor(0,0);
-					lcd_printf("MOTOR:  OFF     ");
-					LCD_setCursor(0,1);
-					lcd_printf("                ");
-				}
-				else
-				{
-					LCD_setCursor(0,0);
-					lcd_printf("MOTOR CURRENT:  ");
-					LCD_setCursor(0,1);
-					lcd_printf("%03lu.%02lu            ",(Analog_Parameter_Struct.Motor_Current_IntPart),(Analog_Parameter_Struct.Motor_Current_DecPart));
-				}
-				break;
-			}
+			setNetworkCharacter=false;
+			byte Network_0[8]={
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000
+			};
 			
-			case 3:
+			byte Network_1[8]={
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B11111,
+				0B11111
+			};
+			byte Network_2[8]={
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B11111,
+				0B11111,
+				0B11111
+			};
+			byte Network_3[8]={
+				0B00000,
+				0B00000,
+				0B00000,
+				0B00000,
+				0B11111,
+				0B11111,
+				0B11111,
+				0B11111
+			};
+			byte Network_4[8]={
+				0B00000,
+				0B00000,
+				0B11111,
+				0B11111,
+				0B11111,
+				0B11111,
+				0B11111,
+				0B11111
+			};
+
+			byte Network_5[8]={
+				0B11111,
+				0B11111,
+				0B11111,
+				0B11111,
+				0B11111,
+				0B11111,
+				0B11111,
+				0B11111
+			};
+			
+			LCD_Create_Custom_createChar(0,Network_0);
+			LCD_Create_Custom_createChar(1,Network_1);
+			LCD_Create_Custom_createChar(2,Network_2);
+			LCD_Create_Custom_createChar(3,Network_3);
+			LCD_Create_Custom_createChar(4,Network_4);
+			LCD_Create_Custom_createChar(5,Network_5);
+
+			
+		}
+		
+		
+		if(firstEvent)
+		{
+			LCD_setCursor(0,0);
+			lcd_printf("Initializing... ");
+			LCD_setCursor(0,1);
+			lcd_printf("COMMANDER v2    ");
+		}
+		else
+		{
+			switch(screen)
 			{
-				LCD_setCursor(0,0);
-				lcd_printf("3 PHASE SEQ:");
-				if (structThreePhase_state.u8t_phase_sequence_flag == THREEPHASE_OK)
+				case  1:
 				{
-					lcd_printf(" OK ");
+					LCD_setCursor(0,0);
+					lcd_printf("VRY   VYB   VBR ");
+					LCD_setCursor(0,1);
+					lcd_printf("%03lu   ",(Analog_Parameter_Struct.PhaseRY_Voltage));
+					lcd_printf("%03lu   ",(Analog_Parameter_Struct.PhaseYB_Voltage));
+					lcd_printf("%03lu ",(Analog_Parameter_Struct.PhaseBR_Voltage));
+					break;
 				}
-				else
+				case  2:
 				{
-					lcd_printf(" ERR");
-				}
-				LCD_setCursor(0,1);
-				lcd_printf("PHASE STATE:");
-				if (structThreePhase_state.u8t_phase_ac_state == AC_3PH)
-				{
-					lcd_printf(" 3PH ");
-				}
-				else if(structThreePhase_state.u8t_phase_ac_state == AC_2PH)
-				{
-					lcd_printf(" 2PH ");
-				}
-				else
-				{
-					lcd_printf(" OFF");
-				}
-				break;
-			}
-			case 4:
-			{
-				LCD_setCursor(0,0);
-				lcd_printf("O-LEVEL : ");
-				if (overheadLevel == OVERHEADHIGHLEVEL)
-				{
-					lcd_printf("HIGH  ");
-				}
-				else if (overheadLevel == OVERHEADMIDLEVEL)
-				{
-					lcd_printf("MID   ");
-				}
-				else if (overheadLevel == OVERHEADCRITICALLEVEL)
-				{
-					lcd_printf("LOW   ");
-				}
-				LCD_setCursor(0,1);
-				lcd_printf("U-LEVEL : ");
-				if (undergroundLevel == CRITICALLEVEL)
-				{
-					lcd_printf("CRTCL ");
-				}
-				else if (undergroundLevel == LOWLEVEL)
-				{
-					lcd_printf("LOW   ");
-				}
-				else if (undergroundLevel == MIDLEVEL)
-				{
-					lcd_printf("MID   ");
-				}
-				else if (undergroundLevel == HIGHLEVEL)
-				{
-					lcd_printf("HIGH  ");
-				}
-				break;
-			}
-			case 5:
-			{
-				LCD_setCursor(0,0);
-				lcd_printf("BatteryPer: %u%% ",Analog_Parameter_Struct.Battery_percentage);
-				LCD_setCursor(0,1);
-				lcd_printf("SIGNAL : ");
-				LCD_setCursor(9,1);
-				lcd_printf("       ");
-				LCD_setCursor(9,1);
-				
-				uint8_t tempSignal = Signal_Strength;
-				for (uint8_t i=0;i<=tempSignal;i++)
-				{
-					LCD_write(i);
-				}
-				
-				break;
-			}
-			case 6:
-			{
-				LCD_setCursor(0,0);
-				switch(callStateOnLCD)
-				{
-					case LCDCALLSTATE_RINGING:
+					if(!getMotorState())
 					{
-						lcd_printf("INCOMING CALL.. ");
+						LCD_setCursor(0,0);
+						lcd_printf("MOTOR:  OFF     ");
 						LCD_setCursor(0,1);
-						lcd_printf("%-16s",numberOnLCD);
-						break;
+						lcd_printf("                ");
 					}
-					case LCDCALLSTATE_INCALL:
+					else
 					{
-						lcd_printf("IN CALL...      ");
+						LCD_setCursor(0,0);
+						lcd_printf("MOTOR CURRENT:  ");
 						LCD_setCursor(0,1);
-						lcd_printf("%-16s",numberOnLCD);
-						break;
+						lcd_printf("%03lu.%02lu            ",(Analog_Parameter_Struct.Motor_Current_IntPart),(Analog_Parameter_Struct.Motor_Current_DecPart));
 					}
-					case LCDCALLSTATE_OUTGOING:
-					{
-						lcd_printf("DIALING...      ");
-						LCD_setCursor(0,1);
-						lcd_printf("%-16s",numberOnLCD);
-						break;
-					}
-					case LCDCALLSTATE_INCOMINGSMS:
-					{
-						lcd_printf("INCOMING SMS... ");
-						LCD_setCursor(0,1);
-						lcd_printf("%-16s",numberOnLCD);
-						setCallStateOnLCD(LCDCALLSTATE_IDLE,NULL,false);
-						break;
-					}
-					case LCDCALLSTATE_OUTGOINGSMS:
-					{
-						lcd_printf("OUTGOING SMS... ");
-						LCD_setCursor(0,1);
-						lcd_printf("%-16s",numberOnLCD);
-						setCallStateOnLCD(LCDCALLSTATE_IDLE,NULL,false);
-						break;
-					}
+					break;
 				}
-				break;
+				case  3:
+				{
+					if(!getMotorState())
+					{
+						LCD_setCursor(0,0);
+						lcd_printf("MOTOR:  OFF     ");
+						LCD_setCursor(0,1);
+						lcd_printf("                ");
+					}
+					else
+					{
+						LCD_setCursor(0,0);
+						lcd_printf("MOTOR WATTAGE:  ");
+						LCD_setCursor(0,1);
+						lcd_printf("%03lu.%02lu kW         ",(Analog_Parameter_Struct.Motor_Power_IntPart),(Analog_Parameter_Struct.Motor_Power_DecPart));
+					}
+					break;
+				}
+				case 4:
+				{
+					LCD_setCursor(0,0);
+					lcd_printf("3 PHASE SEQ:");
+					if (structThreePhase_state.u8t_phase_sequence_flag == THREEPHASE_OK)
+					{
+						lcd_printf(" OK ");
+					}
+					else
+					{
+						lcd_printf(" ERR");
+					}
+					LCD_setCursor(0,1);
+					lcd_printf("PHASE STATE:");
+					if (structThreePhase_state.u8t_phase_ac_state == AC_3PH)
+					{
+						lcd_printf(" 3PH ");
+					}
+					else if(structThreePhase_state.u8t_phase_ac_state == AC_2PH)
+					{
+						lcd_printf(" 2PH ");
+					}
+					else
+					{
+						lcd_printf(" OFF");
+					}
+					break;
+				}
+				case 5:
+				{
+					LCD_setCursor(0,0);
+					lcd_printf("O-LEVEL : ");
+					if (overheadLevel == OVERHEADHIGHLEVEL)
+					{
+						lcd_printf("HIGH  ");
+					}
+					else if (overheadLevel == OVERHEADMIDLEVEL)
+					{
+						lcd_printf("MID   ");
+					}
+					else if (overheadLevel == OVERHEADCRITICALLEVEL)
+					{
+						lcd_printf("LOW   ");
+					}
+					LCD_setCursor(0,1);
+					lcd_printf("U-LEVEL : ");
+					if (undergroundLevel == CRITICALLEVEL)
+					{
+						lcd_printf("CRTCL ");
+					}
+					else if (undergroundLevel == LOWLEVEL)
+					{
+						lcd_printf("LOW   ");
+					}
+					else if (undergroundLevel == MIDLEVEL)
+					{
+						lcd_printf("MID   ");
+					}
+					else if (undergroundLevel == HIGHLEVEL)
+					{
+						lcd_printf("HIGH  ");
+					}
+					break;
+				}
+				case 6:
+				{
+					LCD_setCursor(0,0);
+					lcd_printf("BatteryPer: %u%% ",Analog_Parameter_Struct.Battery_percentage);
+					LCD_setCursor(0,1);
+					lcd_printf("SIGNAL : ");
+					LCD_setCursor(9,1);
+					lcd_printf("       ");
+					LCD_setCursor(9,1);
+					
+					uint8_t tempSignal = Signal_Strength;
+					for (uint8_t i=0;i<=tempSignal;i++)
+					{
+						LCD_write(i);
+					}
+
+					break;
+				}
+				case 7:
+				{
+					LCD_setCursor(0,0);
+					switch(callStateOnLCD)
+					{
+						case LCDCALLSTATE_RINGING:
+						{
+							lcd_printf("INCOMING CALL.. ");
+							LCD_setCursor(0,1);
+							lcd_printf("%-16s",numberOnLCD);
+							break;
+						}
+						case LCDCALLSTATE_INCALL:
+						{
+							lcd_printf("IN CALL...      ");
+							LCD_setCursor(0,1);
+							lcd_printf("%-16s",numberOnLCD);
+							break;
+						}
+						case LCDCALLSTATE_OUTGOING:
+						{
+							lcd_printf("DIALING...      ");
+							LCD_setCursor(0,1);
+							lcd_printf("%-16s",numberOnLCD);
+							break;
+						}
+						case LCDCALLSTATE_INCOMINGSMS:
+						{
+							lcd_printf("INCOMING SMS... ");
+							LCD_setCursor(0,1);
+							lcd_printf("%-16s",numberOnLCD);
+							setCallStateOnLCD(LCDCALLSTATE_IDLE,NULL,false);
+							break;
+						}
+						case LCDCALLSTATE_OUTGOINGSMS:
+						{
+							lcd_printf("OUTGOING SMS... ");
+							LCD_setCursor(0,1);
+							lcd_printf("%-16s",numberOnLCD);
+							setCallStateOnLCD(LCDCALLSTATE_IDLE,NULL,false);
+							break;
+						}
+					}
+					break;
+				}
 			}
 		}
+		
 		if (xQueueReceive(xfour_Second_Queue,&time,0))
 		{
 			xTimerChangePeriod( four_Second_timeout_timer, 4000/portTICK_PERIOD_MS, portMAX_DELAY);
 			if(varPauseDisplay==false)
 			{
 				screen++;
-				if(!factory_settings_parameter_struct.ENABLE_WATER && screen==4)
+				if(!getMotorState() && screen==3)
 				{
 					screen++;
 				}
-				if(callStateOnLCD==LCDCALLSTATE_IDLE && screen==6)
+				
+				if(!factory_settings_parameter_struct.ENABLE_WATER && screen==5)
 				{
 					screen++;
+				}
+				
+				{
+					if(callStateOnLCD==LCDCALLSTATE_IDLE && screen==7)
+					{
+						screen++;
+					}
+					else if(callStateOnLCD!=LCDCALLSTATE_IDLE)
+					{
+						screen=7;
+					}
 				}
 			}
 		}
 		
-		if (screen>6)
+		if (screen>7)
 		{
 			screen=1;
 		}
@@ -310,7 +360,6 @@ static void lcd_displaying_task(void *params)
 
 void start_lcd_service(void)
 {
-	
 	xfour_Second_Queue=xQueueCreate(1,sizeof(uint8_t));
 	xTaskCreate(lcd_displaying_task,NULL,(uint16_t)400,NULL,1,NULL);
 	

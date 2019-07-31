@@ -34,7 +34,7 @@
 volatile bool isRinging;
 
 /** Boolean variable to signal if currently the SIM800C is active or is asleep*/
-static bool isGSMModuleAwake;
+volatile bool isGSMModuleAwake;
 
 /** uint32_t variable to store the time in ms when the last command was received or sent to GSM Module*/
 static uint32_t lastGSMCommunicationTime;

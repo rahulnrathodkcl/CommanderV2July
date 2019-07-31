@@ -7,6 +7,7 @@
 
 #include <math.h>
 
+
 //OverHead Tank
 #define OVERHEAD_TANK_HL_PIN	PIN_PB15
 #define OVERHEAD_TANK_ML_PIN	PIN_PA12
@@ -33,7 +34,7 @@
 
 
 bool adc_read_buffer_done;
-#define NO_RMS_VOLTAGE_READINGS 3
+#define NO_RMS_VOLTAGE_READINGS 4
 struct rmsVoltage
 {
 	uint16_t voltRange[NO_RMS_VOLTAGE_READINGS];
@@ -58,6 +59,8 @@ bool gotOffCommand;
 bool gotOnCommand;
 bool offButtonPressed;
 
+
+
 volatile uint8_t allPhase;
 volatile bool mFeedback;
 volatile bool phaseAC;
@@ -69,7 +72,7 @@ uint32_t tempStartTimer;
 uint8_t fdbkRefCurrent;
 bool stopMotorCommandGiven;
 
-bool firstEvent;
+volatile bool firstEvent;
 bool singlePhasingTimerOn;
 uint32_t tempSinglePhasingTimer;
 uint8_t singlePhasingTime;
@@ -87,8 +90,8 @@ bool waitStableLineOn;
 uint32_t waitStableLineTimer;
 uint8_t waitStableLineTime;
 
-volatile uint32_t lastPressTime;
-volatile uint8_t lastButtonEvent;
+static volatile uint32_t lastPressTime;
+static volatile uint8_t lastButtonEvent;
 
 uint8_t tempWaterEventCount;
 uint8_t undergroundLevel;
@@ -101,14 +104,16 @@ bool simEventTemp[19];
 char simEvent[19];
 
 //////////////////////////////////////////////////////////////////////////
-volatile bool varPauseDisplay;
+static volatile bool varPauseDisplay;
 //////////////////////////////////////////////////////////////////////////
 uint8_t m2mEvent_arr[2];
 uint8_t mapTable[2];
 //////////////////////////////////////////////////////////////////////////
 
 volatile bool eventOccured;
-volatile bool buttonEventOccured;
+volatile bool motorFeedbackEvent;
+volatile uint32_t motorFeedbackEventTime;
+static volatile bool buttonEventOccured;
 
 volatile bool waterEventOccured;
 
@@ -328,6 +333,7 @@ void voltageOnCall(void);
 void setM2MEventState(uint8_t eventNo, uint8_t state);
 void M2MEventManager(void);
 void SIMEventManager(void);
+void calcPowerConsumption(void);
 void checkCurrentConsumption(void);
 
 void start_motor_service(void);
@@ -340,7 +346,7 @@ void configure_rtc(void);
 void configure_event(void);
 
 void buttonFilter(void);
-void operateOnButtonEvent(void);
+static void operateOnButtonEvent(void);
 
 void setDisplayPause(bool);
 
