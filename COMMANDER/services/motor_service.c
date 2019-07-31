@@ -3,7 +3,7 @@
 static SemaphoreHandle_t xADC_Semaphore=NULL;
 static SemaphoreHandle_t xButton_Semaphore=NULL;
 
-static bool taskPSet;
+volatile bool taskPSet;
 static TaskHandle_t motorTask=NULL;
 static TaskHandle_t fiftymsTask=NULL;
 
@@ -798,7 +798,7 @@ uint16_t filterVoltage(enum phaseReading phase,uint16_t voltReading)
 	p1->index = ((p1->index) + 1 )%NO_RMS_VOLTAGE_READINGS;
 	
 	updateRMSValues(p1);
-					
+	
 	//if(voltReading > p1->rmsVoltage)
 	{
 		if(p1->hasZeroReading)
@@ -808,7 +808,7 @@ uint16_t filterVoltage(enum phaseReading phase,uint16_t voltReading)
 		
 		//if ((voltReading - p1->rmsVoltage)>(p1->rmsVoltage * 6/100))
 		//{
-			//return p1->rmsVoltage;
+		//return p1->rmsVoltage;
 		//}
 		if((p1->rmsVoltage - voltReading)<(p1->rmsVoltage * 10/100))
 		{
@@ -954,7 +954,7 @@ void detect_Motor_Current(void){
 /************************************************************************/
 /* To Calculate Power Consumption of Motor                              */
 /************************************************************************/
-void calcPowerConsumption(void) 
+void calcPowerConsumption(void)
 {
 	uint16_t avgVotlage = Analog_Parameter_Struct.PhaseRY_Voltage + Analog_Parameter_Struct.PhaseYB_Voltage + Analog_Parameter_Struct.PhaseBR_Voltage;
 	
@@ -1751,15 +1751,21 @@ void checkCurrentConsumption(void)
 	
 	//lastCurrentReadingTime=xTaskGetTickCount();
 	
-	uint32_t ADCcurrent = Analog_Parameter_Struct.Motor_Current;
-	
 	//if(xSemaphoreTake(xADC_Semaphore,portMAX_DELAY)== pdTRUE)
 	//{
 	//ADCcurrent = Read_ADC0(ADC_POSITIVE_INPUT_PIN16,200);
 	//xSemaphoreGive(xADC_Semaphore);
 	//}
 	
-	uint32_t temp = ADCcurrent;
+	uint32_t temp=0;
+	if(user_settings_parameter_struct.over_under_DetectionMethod== MOTOR_UNDEROVER_DETECTION_POWER)
+	{
+		temp = Analog_Parameter_Struct.Motor_Power;
+	}
+	else
+	{
+		temp = Analog_Parameter_Struct.Motor_Current;
+	}
 	
 	uint32_t overLoadDetectValue=12000;
 	
@@ -2442,7 +2448,7 @@ static void vTask_50ms_Timer(void *params)
 			vTaskPrioritySet(motorTask,2);
 		}
 		xSemaphoreGive(xButton_Semaphore);
-	
+		
 	}
 }
 

@@ -136,7 +136,7 @@ bool gsm_module_sleep_elligible(void)
 	if(isGSMModuleAwake)
 	{
 		bool ret=false;
-		ret= ((xTaskGetTickCount() - lastGSMCommunicationTime)>=20000L);
+		ret= ((xTaskGetTickCount() - lastGSMCommunicationTime)>=50000L);
 		return ret;
 	}
 	return true;

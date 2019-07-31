@@ -90,8 +90,8 @@ bool waitStableLineOn;
 uint32_t waitStableLineTimer;
 uint8_t waitStableLineTime;
 
-static volatile uint32_t lastPressTime;
-static volatile uint8_t lastButtonEvent;
+volatile uint32_t lastPressTime;
+volatile uint8_t lastButtonEvent;
 
 uint8_t tempWaterEventCount;
 uint8_t undergroundLevel;
@@ -104,7 +104,7 @@ bool simEventTemp[19];
 char simEvent[19];
 
 //////////////////////////////////////////////////////////////////////////
-static volatile bool varPauseDisplay;
+volatile bool varPauseDisplay;
 //////////////////////////////////////////////////////////////////////////
 uint8_t m2mEvent_arr[2];
 uint8_t mapTable[2];
@@ -113,7 +113,7 @@ uint8_t mapTable[2];
 volatile bool eventOccured;
 volatile bool motorFeedbackEvent;
 volatile uint32_t motorFeedbackEventTime;
-static volatile bool buttonEventOccured;
+volatile bool buttonEventOccured;
 
 volatile bool waterEventOccured;
 
@@ -346,7 +346,7 @@ void configure_rtc(void);
 void configure_event(void);
 
 void buttonFilter(void);
-static void operateOnButtonEvent(void);
+void operateOnButtonEvent(void);
 
 void setDisplayPause(bool);
 

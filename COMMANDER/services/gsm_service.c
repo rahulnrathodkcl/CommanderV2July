@@ -1405,8 +1405,8 @@ static void vTask_GSM_service(void *params)
 	isGSMModuleAwake=false;
 	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
 	lastGSMCommunicationTime=0;
-	gsm_module_exit_sleep(false);				//to switch DTR pin so that sim remains active 
-				
+	gsm_module_exit_sleep(false);				//to switch DTR pin so that sim remains active
+	
 	if (factory_settings_parameter_struct.ENABLE_CURRENT)
 	{
 		zeroPressed=false;
@@ -1475,17 +1475,18 @@ static void vTask_GSM_service(void *params)
 				}
 				else
 				{
-					if(!getACPowerState() &&  isGSMModuleAwake && gsm_module_sleep_elligible())
-					{
-						gsm_module_enter_sleep();
-					}
 					
 					if (currentStatus == 'N' && currentCallStatus == 'N')
 					{
+						if(!getACPowerState() &&  isGSMModuleAwake && gsm_module_sleep_elligible())
+						{
+							gsm_module_enter_sleep();
+						}
+
 						if(isGSMModuleAwake)
 						{
 							////Update network
-							if (xTaskGetTickCount() - network_update_time>= (1*30*1000))
+							if (xTaskGetTickCount() - network_update_time>= (1*60*1000))
 							{
 								network_update_time = xTaskGetTickCount();
 								Signal_Strength = gsm_getsignalstrength();
@@ -1551,13 +1552,13 @@ static void vTask_GSM_service(void *params)
 							
 							//char passCode[19];
 							//uint32_t pCodeint = factory_settings_parameter_struct.DeviceId_ee + factory_settings_parameter_struct.dateCode;
-							//uint32_t pcodeInt = pCodeint % 1000000L; 
+							//uint32_t pcodeInt = pCodeint % 1000000L;
 							//
-							//sprintf(passCode,"~%6lu",pcodeInt);		//generate pass Phrase							
+							//sprintf(passCode,"~%6lu",pcodeInt);		//generate pass Phrase
 							//if(strstr(Received_SMS,passCode))							//check passCode exists
 							//{
-								//memmove(Received_SMS,Received_SMS+7,strlen(Received_SMS));		//discard passPhrase
-								//admin = true;													//set admin as true as passCode matches
+							//memmove(Received_SMS,Received_SMS+7,strlen(Received_SMS));		//discard passPhrase
+							//admin = true;													//set admin as true as passCode matches
 							//}
 
 							if (admin || primaryUser || alterUsr)
