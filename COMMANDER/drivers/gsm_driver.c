@@ -983,7 +983,7 @@ enum gsm_error gsm_config_module(void)
 												{
 													if (gsm_enable_DTMF_detection() == GSM_ERROR_NONE)
 													{
-														//if (gsm_enable_sleep_mode()==GSM_ERROR_NONE)
+														if (gsm_enable_sleep_mode()==GSM_ERROR_NONE)
 														{
 															if (gsm_store_active_profile() == GSM_ERROR_NONE)
 															{
@@ -994,9 +994,9 @@ enum gsm_error gsm_config_module(void)
 																return GSM_ERROR_CONFIG_FAILED;
 															}
 														}
-														//else
+														else
 														{
-															//	return GSM_ERROR_CONFIG_FAILED;
+																return GSM_ERROR_CONFIG_FAILED;
 														}
 													}
 													else

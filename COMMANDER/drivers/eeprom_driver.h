@@ -66,10 +66,16 @@ uint8_t page_data[EEPROM_PAGE_SIZE];
 /************************************************************************/
 /* MOTOR OVER UNDER DETECTION DEFINITIONS                                */
 #define MOTOR_UNDEROVER_DETECTION_POWER 0x01
-#define MOTOR_UNDEROVER_DETECTION_CURRENT 0x00
+#define MOTOR_UNDEROVER_DETECTION_CURRENT 0x02
 /************************************************************************/
 
 
+
+/************************************************************************/
+/* MOTOR VOLTAGE BYPASS DEFINITIONS                                */
+#define MOTOR_VOLTAGE_BYPASS_ON 0x01
+#define MOTOR_VOLTAGE_BYPASS_OFF 0x00
+/************************************************************************/
 
 
 struct bootloader_parameter
@@ -228,10 +234,12 @@ struct user_settings_parameter
 
 	uint8_t over_under_DetectionMethod;/**  Detection of Method for Motor Underload,Overload; Power or Current*/			//1
 
-	//uint8_t bypassAddress;				//1
-	//uint8_t jumperSettingAddress;			//1
+
+	uint8_t motorVoltageBypass;				//1
+	uint32_t motorVoltageBypassTime;			//4
+	
 	uint8_t dummy1;							//1
-	uint8_t dummy2;							//1
+	//uint8_t dummy2;							//1
 	//uint8_t dummy3;							//1
 
 }user_settings_parameter_struct;
@@ -291,6 +299,11 @@ bool removeNumber(char *numer);
 void clearNumbers(bool admin);
 void saveAlterNumberSetting(bool flag);
 bool addAlternateNumber(char *numer);
+
+void saveUnderOverDetectionMethodSettings(uint8_t value);
+
+void saveMotorVoltageBypassSettings(bool flag);
+void saveMotorVoltageBypasssTimeSettings(uint32_t value);
 
 void saveAutoStartSettings(bool flag);
 void saveAutoStartTimeSettings(uint16_t value);

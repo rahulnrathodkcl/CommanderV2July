@@ -107,4 +107,5 @@ void gotoSleep(void)
 	lcd_in_sleep = true;
 	setNetworkCharacter=true;
 	system_sleep();
+	mcuWakeUpFromSleep=true;
 }

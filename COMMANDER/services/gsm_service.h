@@ -6,6 +6,8 @@
 #include "motor_service.h"
 #include "lcd_driver.h"
 
+volatile bool mcuWakeUpFromSleep;
+
 bool simReInit;
 bool isRegisteredNumber;
 

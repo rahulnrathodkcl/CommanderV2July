@@ -736,19 +736,65 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 		{
 			memmove(received_command,received_command+8,strlen(received_command));
 			
-			if(factory_settings_parameter_struct.ENABLE_CURRENT && (received_command[0]=='P' || received_command[0]=='C'))
+			if(factory_settings_parameter_struct.ENABLE_CURRENT)
 			{
-				saveResponseSettings((char)received_command);  //save specific RESPONSE settings
-				
-				incomingSMSProcessed=true;
-				
-				if (response_sms_processed_cmd == true)
+				uint8_t detectionMethod=0;
+				if(received_command[0]=='C')
 				{
-					strcpy(resep_msg,"UOMETHOD : ");
-					strcat(resep_msg,received_command);
-					strcat(resep_msg," OK");
+					detectionMethod=MOTOR_UNDEROVER_DETECTION_CURRENT;
+				}
+				else if(received_command[0]=='P')
+				{
+					detectionMethod=MOTOR_UNDEROVER_DETECTION_POWER;
+				}
+				
+				if(detectionMethod!=0)
+				{
+					saveUnderOverDetectionMethodSettings(detectionMethod);
+					incomingSMSProcessed=true;
+					if (response_sms_processed_cmd == true)
+					{
+						strcpy(resep_msg,"UOMETHOD : ");
+						strcat(resep_msg,received_command);
+						strcat(resep_msg," OK");
+					}
 				}
 			}
+		}
+	}
+	else if(StringstartsWith(received_command,"MVBYPON"))
+	{
+		saveMotorVoltageBypassSettings(true);
+		incomingSMSProcessed=true;
+		
+		if (response_sms_processed_cmd == true)
+		{
+			strcpy(resep_msg,"MOTOR VOLTAGE BYPASS ON");
+		}
+	}
+	else if(StringstartsWith(received_command,"MVBYPOFF"))
+	{
+		saveMotorVoltageBypassSettings(false);
+		incomingSMSProcessed=true;
+		
+		if (response_sms_processed_cmd == true)
+		{
+			strcpy(resep_msg,"MOTOR VOLTAGE BYPASS OFF");
+		}
+	}
+	else if(StringstartsWith(received_command,"MVBYPV"))
+	{
+		memmove(received_command,received_command+6,strlen(received_command));
+		uint8_t voltageBypTime = atoi(received_command);
+		if (voltageBypTime<10) voltageBypTime = 10;
+		if (voltageBypTime>3600L) voltageBypTime=3600L;
+		
+		saveMotorVoltageBypasssTimeSettings(voltageBypTime);
+		incomingSMSProcessed=true;
+		
+		if (response_sms_processed_cmd == true)
+		{
+			sprintf(resep_msg,"Motor Voltage Bypass Time Set to %d",voltageBypTime);
 		}
 	}
 	else if (StringstartsWith(received_command,"RESP"))
@@ -771,10 +817,6 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 			}
 		}
 	}
-	//else if (StringstartsWith(received_command,"SJMP"))
-	//{
-	//strcpy(resep_msg,"New hardware does not required Jumper Setting");
-	//}
 	else if (StringstartsWith(received_command,"OVR"))
 	{
 		memmove(received_command,received_command+3,strlen(received_command));
@@ -821,7 +863,6 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 			user_settings_parameter_struct.underloadPerAddress);
 			response_sms_processed_cmd = true;
 			incomingSMSProcessed=true;
-
 		}
 
 	}
@@ -1402,6 +1443,7 @@ static void vTask_GSM_service(void *params)
 	isRegisteredNumber=false;
 	retries=0;
 	
+	mcuWakeUpFromSleep=false;
 	isGSMModuleAwake=false;
 	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
 	lastGSMCommunicationTime=0;
@@ -1461,6 +1503,12 @@ static void vTask_GSM_service(void *params)
 			}
 			else
 			{
+				if(mcuWakeUpFromSleep)
+				{
+					mcuWakeUpFromSleep=false;
+					gsm_module_exit_sleep(false);
+				}
+				
 				if ((boolOne_Time_Msg_Delete_Flag == false) && (boolGsm_config_flag == true))
 				{
 					if (gsm_delete_all_sms() == GSM_ERROR_NONE)

@@ -913,9 +913,12 @@ void set_Three_Phase_State_From_Voltage(void) {
 	
 	if (current_three_phase_state != structThreePhase_state.u8t_phase_ac_state)
 	{
-		last_three_phase_state  = 	temp_phase_state;								//assign saved temp AC Phase State to last_three_phase_state
-		current_three_phase_state = structThreePhase_state.u8t_phase_ac_state;
-		eventOccured = true;
+		if(!motorRelatedVoltageBypassOn)
+		{
+			last_three_phase_state  = 	temp_phase_state;								//assign saved temp AC Phase State to last_three_phase_state
+			current_three_phase_state = structThreePhase_state.u8t_phase_ac_state;
+			eventOccured = true;
+		}
 	}
 }
 
@@ -1433,7 +1436,15 @@ void startMotor(bool commanded, bool forcedStart)
 			//MOTOR_ON_LED_ON;
 			tempStartSequenceTimer = xTaskGetTickCount();
 			startSequenceOn = true;
+
+			if(user_settings_parameter_struct.motorVoltageBypass)
+			{
+				motorRelatedVoltageBypassOn=true;
+				motorVoltageBypassTimerTime=xTaskGetTickCount();
+			}
+
 			setMotorState(true);
+
 			if (factory_settings_parameter_struct.ENABLE_CURRENT)
 			{
 				enableCurrentBuffer=false;
@@ -1471,6 +1482,7 @@ void stopMotor(bool commanded, bool forceStop,bool offButton)
 		{
 			fdbkRefCurrent = Analog_Parameter_Struct.Motor_Current_IntPart;
 		}
+		motorRelatedVoltageBypassOn=false;
 		STOP_RELAY_OFF;
 		stopMotorCommandGiven=true;
 		tempStopSequenceTimer = xTaskGetTickCount();
@@ -1735,6 +1747,11 @@ void SIMEventManager(void)
 	}
 }
 
+bool MotorVoltageBypassTimerOver(void)
+{
+	return ((xTaskGetTickCount()-motorVoltageBypassTimerTime) > user_settings_parameter_struct.motorVoltageBypassTime);
+}
+
 
 void checkCurrentConsumption(void)
 {
@@ -1894,6 +1911,9 @@ static void vTask_MOTORCONTROL(void *params)
 	
 	lastPressTime=0;
 	lastButtonEvent=0;
+
+	motorRelatedVoltageBypassOn=false;
+	motorVoltageBypassTimerTime= 0;
 	
 	uint8_t i= 0;
 	if (factory_settings_parameter_struct.ENABLE_CURRENT)
@@ -2019,6 +2039,14 @@ static void vTask_MOTORCONTROL(void *params)
 		if(stopMotorCommandGiven && xTaskGetTickCount()-tempStopSequenceTimer>5000)
 		{
 			stopMotorCommandGiven=false;
+		}
+		
+		if(motorRelatedVoltageBypassOn)
+		{
+			if(MotorVoltageBypassTimerOver())
+			{
+				motorRelatedVoltageBypassOn=false;
+			}
 		}
 		
 		if(singlePhasingTimerOn)
@@ -2227,7 +2255,7 @@ bool motor_checkSleepElligible(void)
 	}
 	
 	return (!getACPowerState() && !eventOccured && event && !waitStableLineOn && !singlePhasingTimerOn
-	&& !startTimerOn && !startSequenceOn && !stopSequenceOn && !firstEvent);
+	&& !startTimerOn && !startSequenceOn && !stopSequenceOn && !firstEvent && !buttonEventOccured && lastButtonEvent==0);
 	
 }
 

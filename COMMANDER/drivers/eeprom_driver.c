@@ -191,7 +191,9 @@ void init_eeprom(void)
 		user_settings_parameter_struct.singlePhasingVoltage			= 80;
 		user_settings_parameter_struct.detectPhaseSequence			= true;
 		user_settings_parameter_struct.detectMotorFeedback			= MOTORFEEDBACK_DETECTION_ON;
-		user_settings_parameter_struct.over_under_DetectionMethod		= MOTOR_UNDEROVER_DETECTION_CURRENT;
+		user_settings_parameter_struct.over_under_DetectionMethod	= MOTOR_UNDEROVER_DETECTION_CURRENT;
+		user_settings_parameter_struct.motorVoltageBypass			= MOTOR_VOLTAGE_BYPASS_OFF;
+		user_settings_parameter_struct.motorVoltageBypassTime		= 10;
 
 		memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
 		eeprom_emulator_write_page(USER_SETTING_PARAMETERS_PAGE, page_data);
@@ -750,6 +752,30 @@ void savePhaseSequenceProtectionSettings(bool phaseSequenceSetting)
 	eeprom_emulator_commit_page_buffer();
 }
 
+
+void saveUnderOverDetectionMethodSettings(uint8_t oumethodDetection)
+{
+	user_settings_parameter_struct.over_under_DetectionMethod = oumethodDetection;
+	memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
+	eeprom_emulator_write_page(USER_SETTING_PARAMETERS_PAGE, page_data);
+	eeprom_emulator_commit_page_buffer();
+}
+
+void saveMotorVoltageBypassSettings(bool flag)
+{
+	user_settings_parameter_struct.motorVoltageBypass=flag;
+	memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
+	eeprom_emulator_write_page(USER_SETTING_PARAMETERS_PAGE, page_data);
+	eeprom_emulator_commit_page_buffer();
+}
+
+void saveMotorVoltageBypasssTimeSettings(uint32_t value)
+{
+	user_settings_parameter_struct.motorVoltageBypassTime=value;
+	memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
+	eeprom_emulator_write_page(USER_SETTING_PARAMETERS_PAGE, page_data);
+	eeprom_emulator_commit_page_buffer();
+}
 
 void saveMotorFeedbackDetectionSettings(uint8_t motorFeedbackDetection)
 {

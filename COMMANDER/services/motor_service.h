@@ -33,8 +33,11 @@
 #define ME_NOTAVAILABLE			0x03
 
 
+#define NO_RMS_VOLTAGE_READINGS 8
 bool adc_read_buffer_done;
-#define NO_RMS_VOLTAGE_READINGS 4
+
+
+
 struct rmsVoltage
 {
 	uint16_t voltRange[NO_RMS_VOLTAGE_READINGS];
@@ -65,6 +68,10 @@ volatile uint8_t allPhase;
 volatile bool mFeedback;
 volatile bool phaseAC;
 volatile bool vBoolPhaseSeq;
+
+
+bool motorRelatedVoltageBypassOn;
+uint32_t motorVoltageBypassTimerTime;
 
 bool startTimerOn;
 uint32_t tempStartTimer;
@@ -275,6 +282,7 @@ void adc_buffer_complete_callback(const struct adc_module *const module);
 uint16_t filterVoltage(enum phaseReading phase,uint16_t voltReading);
 void updateRMSValues(struct rmsVoltage *phaseRMSStruct);
 
+bool MotorVoltageBypassTimerOver(void);
 
 void readOverHeadWaterSensorState(bool *olow,bool *ohigh);
 void updateOverheadLevel(uint8_t level);
