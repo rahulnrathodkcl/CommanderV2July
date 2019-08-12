@@ -85,6 +85,11 @@ struct bootloader_parameter
 	uint8_t firmware_download_pending;
 	uint8_t firmware_update_process_completed;
 	uint8_t firmware_update_error_code;
+	uint8_t retries;
+	
+	uint8_t dummy1;
+	uint8_t dummy2;
+	uint8_t dummy3;
 	
 	char firmware_updater_mobile_no[16];
 	

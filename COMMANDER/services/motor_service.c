@@ -1092,7 +1092,6 @@ void readSensorState(uint8_t *allPhase, bool *phaseSeq,bool *motor, bool *acPhas
 	else if(user_settings_parameter_struct.detectMotorFeedback == MOTORFEEDBACK_DETECTION_ON)
 	{
 		*motor  = !(port_pin_get_input_level(PIN_MOTOR_FEEDBACK));
-		*motor  = !(port_pin_get_input_level(PIN_MOTOR_FEEDBACK));
 	}
 
 
@@ -1161,7 +1160,8 @@ void updateSensorState(uint8_t var3PhaseState, bool var3PhaseSeq, bool motorStat
 	setMotorState(motorState); // mFeedback = p2;
 	setACPowerState(acPhaseState); // phaseAC = p4;
 	
-	if(getAllPhaseState()==AC_3PH && getACPowerState())
+	//if(getAllPhaseState()==AC_3PH && getACPowerState())
+	if(getAllPhaseState()==AC_3PH)
 	{
 		bool tempPhaseSequence = true;									// init temp variable with default value as correct sequence
 
@@ -1247,7 +1247,8 @@ void triggerAutoStart(void)
 {
 	if (!getMotorState())
 	{
-		if (getAllPhaseState() && getACPowerState())
+		//if (getAllPhaseState() && getACPowerState())
+		if (getAllPhaseState())
 		{
 			startTimerOn = true;
 			tempStartTimer = xTaskGetTickCount();
@@ -1264,7 +1265,8 @@ void operateOnEvent(void)
 	eventOccured = false;
 	
 	//todo: add current phase Sequence and previous phase sequence is equals check here
-	if ((t3Phase == getAllPhaseState()) && (tMotor == getMotorState()) && (tacPhase == getACPowerState()))
+	//if ((t3Phase == getAllPhaseState()) && (tMotor == getMotorState()) && (tacPhase == getACPowerState()))
+	if ((t3Phase == getAllPhaseState()) && (tMotor == getMotorState()))
 	{
 		return;
 	}
@@ -1278,8 +1280,8 @@ void operateOnEvent(void)
 		}
 		////////////////////////////////////////Unknown Motor Off Check ////////////////////////////////////////
 		
-		else if ((tacPhase && getACPowerState()) &&																										//AC PHASE PRESENT
-		((user_settings_parameter_struct.detectSinglePhasing && t3Phase==AC_3PH && getAllPhaseState()==AC_3PH) ||								//IF SPP ON, 3 phase old and current is present
+		//else if ((tacPhase && getACPowerState()) &&																										//AC PHASE PRESENT
+		else if (((user_settings_parameter_struct.detectSinglePhasing && t3Phase==AC_3PH && getAllPhaseState()==AC_3PH) ||								//IF SPP ON, 3 phase old and current is present
 		(!user_settings_parameter_struct.detectSinglePhasing) && t3Phase>=AC_2PH && getAllPhaseState()>=AC_2PH) &&							//IF SPP OFF, 3 phase old and current is >= 2 phase
 		(!tMotor))																																// AND MOTOR HAS TURNED OFF
 		{
@@ -1391,9 +1393,13 @@ bool waitStableLineOver(void)
 void startMotor(bool commanded, bool forcedStart)
 {
 	startTimerOn = false;
+
+	//if (forcedStart || (getACPowerState() &&																														//AC Phase is Presnet
+	//((getAllPhaseState()==AC_3PH) || (getAllPhaseState()==AC_2PH && !user_settings_parameter_struct.detectSinglePhasing)) &&				//3 phase is present, or SPP is OFF and 2 phase is present
+	//((user_settings_parameter_struct.detectPhaseSequence && getPhaseSequence()) || (!user_settings_parameter_struct.detectPhaseSequence))))	//Phase Sequnce Protection is ON and correct phase seq, or Phase Seq Protection is off
 	
-	if (forcedStart || (getACPowerState() &&																														//AC Phase is Presnet
-	((getAllPhaseState()==AC_3PH) || (getAllPhaseState()==AC_2PH && !user_settings_parameter_struct.detectSinglePhasing)) &&				//3 phase is present, or SPP is OFF and 2 phase is present
+	if (forcedStart || 																														//AC Phase is Presnet
+	(((getAllPhaseState()==AC_3PH) || (getAllPhaseState()==AC_2PH && !user_settings_parameter_struct.detectSinglePhasing)) &&				//3 phase is present, or SPP is OFF and 2 phase is present
 	((user_settings_parameter_struct.detectPhaseSequence && getPhaseSequence()) || (!user_settings_parameter_struct.detectPhaseSequence))))	//Phase Sequnce Protection is ON and correct phase seq, or Phase Seq Protection is off
 	{
 		if (!getMotorState())
@@ -1437,7 +1443,7 @@ void startMotor(bool commanded, bool forcedStart)
 			tempStartSequenceTimer = xTaskGetTickCount();
 			startSequenceOn = true;
 
-			if(user_settings_parameter_struct.motorVoltageBypass)
+			if(user_settings_parameter_struct.motorVoltageBypass==MOTOR_VOLTAGE_BYPASS_ON)
 			{
 				motorRelatedVoltageBypassOn=true;
 				motorVoltageBypassTimerTime=xTaskGetTickCount();
@@ -2254,8 +2260,8 @@ bool motor_checkSleepElligible(void)
 		}
 	}
 	
-	return (!getACPowerState() && !eventOccured && event && !waitStableLineOn && !singlePhasingTimerOn
-	&& !startTimerOn && !startSequenceOn && !stopSequenceOn && !firstEvent && !buttonEventOccured && lastButtonEvent==0);
+	return ((getAllPhaseState()==AC_OFF) && !eventOccured && event && !waitStableLineOn && !singlePhasingTimerOn
+	&& !startTimerOn && !startSequenceOn && !stopSequenceOn && !firstEvent && !buttonEventOccured && (lastButtonEvent==0));
 	
 }
 
@@ -2313,7 +2319,8 @@ void configure_rtc(void)
 
 void ac_detect_callback(struct ac_module *const module_inst)
 {
-	eventOccured = true;
+	;
+	//eventOccured = true;
 }
 
 static void motor_feedback_callback(void)

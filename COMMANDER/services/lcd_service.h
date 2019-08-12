@@ -2,7 +2,7 @@
 #ifndef LCD_SERVICE_H_
 #define LCD_SERVICE_H_
 
-#define VERSION_NO "  B17-30-07-19  "
+
 
 
 

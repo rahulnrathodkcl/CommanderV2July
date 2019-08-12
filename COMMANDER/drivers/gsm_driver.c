@@ -1175,10 +1175,8 @@ bool gsm_responseLine_isCallCut(char *response)
 	{
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+
+	return false;
 }
 
 bool gsm_responseLine_isNew_DTMF_Command_Received(char *response)

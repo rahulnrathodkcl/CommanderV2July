@@ -28,6 +28,8 @@ void init_eeprom(void)
 		bootloader_parameter.firmware_download_pending = false;
 		bootloader_parameter.firmware_update_process_completed = false;
 		bootloader_parameter.firmware_update_error_code = 0;
+		bootloader_parameter.retries= 0;
+		
 		
 		memset(bootloader_parameter.firmware_updater_mobile_no, '\0', sizeof(bootloader_parameter.firmware_updater_mobile_no));
 		strcpy(bootloader_parameter.firmware_updater_mobile_no,"0000000000");
@@ -188,12 +190,12 @@ void init_eeprom(void)
 		user_settings_parameter_struct.waterBypassAddress			= false;
 		
 		user_settings_parameter_struct.detectSinglePhasing			= true;
-		user_settings_parameter_struct.singlePhasingVoltage			= 80;
+		user_settings_parameter_struct.singlePhasingVoltage			= 100;
 		user_settings_parameter_struct.detectPhaseSequence			= true;
 		user_settings_parameter_struct.detectMotorFeedback			= MOTORFEEDBACK_DETECTION_ON;
 		user_settings_parameter_struct.over_under_DetectionMethod	= MOTOR_UNDEROVER_DETECTION_CURRENT;
 		user_settings_parameter_struct.motorVoltageBypass			= MOTOR_VOLTAGE_BYPASS_OFF;
-		user_settings_parameter_struct.motorVoltageBypassTime		= 10;
+		user_settings_parameter_struct.motorVoltageBypassTime		= 10000L;
 
 		memcpy(page_data,&user_settings_parameter_struct,sizeof(user_settings_parameter_struct));
 		eeprom_emulator_write_page(USER_SETTING_PARAMETERS_PAGE, page_data);

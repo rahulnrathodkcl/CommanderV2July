@@ -6,6 +6,9 @@
 #include "motor_service.h"
 #include "lcd_driver.h"
 
+#define VERSION_NO "  B20-05-08-19  "
+
+
 volatile bool mcuWakeUpFromSleep;
 
 bool simReInit;

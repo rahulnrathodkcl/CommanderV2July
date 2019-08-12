@@ -473,6 +473,10 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 		//if (admin)
 		{
 			bootloader_parameter.firmware_download_pending = true;
+			memset(bootloader_parameter.firmware_updater_mobile_no, '\0', sizeof(bootloader_parameter.firmware_updater_mobile_no));
+			strcpy(bootloader_parameter.firmware_updater_mobile_no,phone_number);
+			gsm_module_exit_sleep(false);
+
 			memcpy(page_data,&bootloader_parameter,sizeof(bootloader_parameter));
 			eeprom_emulator_write_page(BOOTLOADER_PARAMETER_PAGE, page_data);
 			eeprom_emulator_commit_page_buffer();
@@ -570,7 +574,7 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 	{
 		response_sms_processed_cmd=true;
 		incomingSMSProcessed=true;
-		sprintf(resep_msg,"%lu",factory_settings_parameter_struct.DeviceId_ee);
+		sprintf(resep_msg,"%lu %s",factory_settings_parameter_struct.DeviceId_ee,VERSION_NO);
 		//strcpy(resep_msg,factory_settings_parameter_struct.DeviceID_ee);
 
 		//sprintf(resep_msg,"Software:%s\nModel:%d\nDeviceId:%lu\nHW:%d",
@@ -782,12 +786,14 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 			strcpy(resep_msg,"MOTOR VOLTAGE BYPASS OFF");
 		}
 	}
-	else if(StringstartsWith(received_command,"MVBYPV"))
+	else if(StringstartsWith(received_command,"MVBYPT"))
 	{
 		memmove(received_command,received_command+6,strlen(received_command));
 		uint8_t voltageBypTime = atoi(received_command);
 		if (voltageBypTime<10) voltageBypTime = 10;
 		if (voltageBypTime>3600L) voltageBypTime=3600L;
+		
+		voltageBypTime=voltageBypTime*1000L;
 		
 		saveMotorVoltageBypasssTimeSettings(voltageBypTime);
 		incomingSMSProcessed=true;
@@ -1507,6 +1513,35 @@ static void vTask_GSM_service(void *params)
 				{
 					mcuWakeUpFromSleep=false;
 					gsm_module_exit_sleep(false);
+				}
+				
+				
+				/************************************************************************/
+				/* Firmware Update Status SMS                                           */
+				/************************************************************************/
+				if(bootloader_parameter.firmware_update_process_completed)
+				{
+					char uResp_SMS[30];
+					memset(uResp_SMS, '\0', sizeof(uResp_SMS));
+					/*Firmware update Completed Successfully*/
+					if(bootloader_parameter.firmware_update_error_code==0)
+					{
+						strcpy(uResp_SMS,"F/W Update Completed");
+					}
+					/*Error in Firmware update*/
+					else
+					{
+						strcpy(uResp_SMS,"F/W Update Error");
+					}
+				
+					if(bootloader_parameter.firmware_updater_mobile_no[0]!='0')
+					{
+						gsm_send_sms(bootloader_parameter.firmware_updater_mobile_no,uResp_SMS);
+					}
+					else
+					{
+						gsm_send_sms(ADMIN_1_MOBILE_NUMBER_PAGE,uResp_SMS);
+					}
 				}
 				
 				if ((boolOne_Time_Msg_Delete_Flag == false) && (boolGsm_config_flag == true))
