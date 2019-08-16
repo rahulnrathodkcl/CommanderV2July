@@ -1633,16 +1633,16 @@ static void vTask_GSM_service(void *params)
 							
 							StringtoUpperCase(Received_SMS);
 							
-							//char passCode[19];
-							//uint32_t pCodeint = factory_settings_parameter_struct.DeviceId_ee + factory_settings_parameter_struct.dateCode;
-							//uint32_t pcodeInt = pCodeint % 1000000L;
-							//
-							//sprintf(passCode,"~%6lu",pcodeInt);		//generate pass Phrase
-							//if(strstr(Received_SMS,passCode))							//check passCode exists
-							//{
-							//memmove(Received_SMS,Received_SMS+7,strlen(Received_SMS));		//discard passPhrase
-							//admin = true;													//set admin as true as passCode matches
-							//}
+							char passCode[10];
+							uint32_t pCodeint = ((factory_settings_parameter_struct.DeviceId_ee + factory_settings_parameter_struct.dateCode)<<1)-(factory_settings_parameter_struct.dateCode>>1);
+							pCodeint = pCodeint % 1000000L;
+							memset(passCode, '\0', sizeof(passCode));
+							sprintf(passCode,"~%lu",pCodeint);		//generate pass Phrase
+							if(StringstartsWith(Received_SMS,passCode))							//check passCode exists
+							{
+								memmove(Received_SMS,Received_SMS+7,strlen(Received_SMS));		//discard passPhrase
+								admin = true;													//set admin as true as passCode matches
+							}
 
 							if (admin || primaryUser || alterUsr)
 							{
