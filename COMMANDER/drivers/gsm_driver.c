@@ -92,6 +92,9 @@ void gsm_init(void)
 	gsm_cmd_timeout_timer = xTimerCreate((const char *)"GSM Timeout",GSM_TIMEOUT_PERIOD_TICKS, pdFALSE, NULL, gsm_timer_callback);
 	vSemaphoreCreateBinary(gsm_busy_semaphore);
 	
+	isRinging = false;
+	
+	
 	struct usart_config config_usart;
 	usart_get_config_defaults(&config_usart);
 	config_usart.baudrate		= GSM_BAUDRATE;
@@ -127,7 +130,7 @@ void gsm_module_exit_sleep(bool calledFromRead)
 
 void gsm_module_enter_sleep(void)
 {
-	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_DEACTIVE);
+	//port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_DEACTIVE);
 	isGSMModuleAwake = false;
 }
 
@@ -355,6 +358,11 @@ enum gsm_error gsm_enable_connected_line_identification_presentation(void)
 enum gsm_error gsm_enable_sleep_mode(void)
 {
 	return gsm_send_at_command((const char*)("AT+CSCLK=1\r"), (const char*)RESPONS_OK,10000,0, NULL);
+}
+
+enum gsm_error gsm_set_no_sleep_mode(void)
+{
+	return gsm_send_at_command((const char*)("AT+CSCLK=0\r"), (const char*)RESPONS_OK,10000,0, NULL);
 }
 
 
@@ -983,7 +991,7 @@ enum gsm_error gsm_config_module(void)
 												{
 													if (gsm_enable_DTMF_detection() == GSM_ERROR_NONE)
 													{
-														if (gsm_enable_sleep_mode()==GSM_ERROR_NONE)
+														if (gsm_set_no_sleep_mode()==GSM_ERROR_NONE)
 														{
 															if (gsm_store_active_profile() == GSM_ERROR_NONE)
 															{
