@@ -538,7 +538,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x10 drivers/itoa.o
  .debug_macro   0x00000000       0x35 drivers/itoa.o
  .debug_line    0x00000000      0x31f drivers/itoa.o
- .debug_str     0x00000000     0x59ae drivers/itoa.o
+ .debug_str     0x00000000     0x59a9 drivers/itoa.o
  .comment       0x00000000       0x5a drivers/itoa.o
  .debug_frame   0x00000000       0x68 drivers/itoa.o
  .ARM.attributes
@@ -2884,7 +2884,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x3e src/ASF/sam0/utils/stdio/read.o
  .debug_macro   0x00000000      0x3df src/ASF/sam0/utils/stdio/read.o
  .debug_line    0x00000000      0x8b0 src/ASF/sam0/utils/stdio/read.o
- .debug_str     0x00000000    0x832d8 src/ASF/sam0/utils/stdio/read.o
+ .debug_str     0x00000000    0x832d3 src/ASF/sam0/utils/stdio/read.o
  .comment       0x00000000       0x5a src/ASF/sam0/utils/stdio/read.o
  .debug_frame   0x00000000       0x2c src/ASF/sam0/utils/stdio/read.o
  .ARM.attributes
@@ -3118,7 +3118,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x3e src/ASF/sam0/utils/stdio/write.o
  .debug_macro   0x00000000      0x3df src/ASF/sam0/utils/stdio/write.o
  .debug_line    0x00000000      0x8a7 src/ASF/sam0/utils/stdio/write.o
- .debug_str     0x00000000    0x832d9 src/ASF/sam0/utils/stdio/write.o
+ .debug_str     0x00000000    0x832d4 src/ASF/sam0/utils/stdio/write.o
  .comment       0x00000000       0x5a src/ASF/sam0/utils/stdio/write.o
  .debug_frame   0x00000000       0x2c src/ASF/sam0/utils/stdio/write.o
  .ARM.attributes
@@ -3371,7 +3371,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x8c src/ASF/thirdparty/freertos/freertos-10.0.0/Source/croutine.o
  .debug_macro   0x00000000       0x43 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/croutine.o
  .debug_line    0x00000000      0xacd src/ASF/thirdparty/freertos/freertos-10.0.0/Source/croutine.o
- .debug_str     0x00000000    0x8784d src/ASF/thirdparty/freertos/freertos-10.0.0/Source/croutine.o
+ .debug_str     0x00000000    0x87848 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/croutine.o
  .comment       0x00000000       0x5a src/ASF/thirdparty/freertos/freertos-10.0.0/Source/croutine.o
  .ARM.attributes
                 0x00000000       0x32 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/croutine.o
@@ -3646,7 +3646,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x91 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/event_groups.o
  .debug_macro   0x00000000       0x19 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/event_groups.o
  .debug_line    0x00000000      0xca2 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/event_groups.o
- .debug_str     0x00000000    0x88158 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/event_groups.o
+ .debug_str     0x00000000    0x88153 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/event_groups.o
  .comment       0x00000000       0x5a src/ASF/thirdparty/freertos/freertos-10.0.0/Source/event_groups.o
  .debug_frame   0x00000000      0x114 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/event_groups.o
  .ARM.attributes
@@ -4946,7 +4946,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x8c src/ASF/thirdparty/freertos/freertos-10.0.0/Source/stream_buffer.o
  .debug_macro   0x00000000       0x18 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/stream_buffer.o
  .debug_line    0x00000000      0xeb5 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/stream_buffer.o
- .debug_str     0x00000000    0x88128 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/stream_buffer.o
+ .debug_str     0x00000000    0x88123 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/stream_buffer.o
  .comment       0x00000000       0x5a src/ASF/thirdparty/freertos/freertos-10.0.0/Source/stream_buffer.o
  .debug_frame   0x00000000      0x250 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/stream_buffer.o
  .ARM.attributes
@@ -5745,7 +5745,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x18 src/ASF/sam0/drivers/wdt/wdt.o
  .debug_macro   0x00000000       0x16 src/ASF/sam0/drivers/wdt/wdt.o
  .debug_line    0x00000000      0xab7 src/ASF/sam0/drivers/wdt/wdt.o
- .debug_str     0x00000000    0x83d4a src/ASF/sam0/drivers/wdt/wdt.o
+ .debug_str     0x00000000    0x83d45 src/ASF/sam0/drivers/wdt/wdt.o
  .comment       0x00000000       0x5a src/ASF/sam0/drivers/wdt/wdt.o
  .debug_frame   0x00000000       0x40 src/ASF/sam0/drivers/wdt/wdt.o
  .ARM.attributes
@@ -11041,7 +11041,7 @@ Discarded input sections
  .debug_macro   0x00000000      0x3df src/ASF/sam0/drivers/system/interrupt/system_interrupt.o
  .debug_macro   0x00000000       0x2e src/ASF/sam0/drivers/system/interrupt/system_interrupt.o
  .debug_line    0x00000000      0x9a4 src/ASF/sam0/drivers/system/interrupt/system_interrupt.o
- .debug_str     0x00000000    0x83c97 src/ASF/sam0/drivers/system/interrupt/system_interrupt.o
+ .debug_str     0x00000000    0x83c92 src/ASF/sam0/drivers/system/interrupt/system_interrupt.o
  .comment       0x00000000       0x5a src/ASF/sam0/drivers/system/interrupt/system_interrupt.o
  .debug_frame   0x00000000       0x6c src/ASF/sam0/drivers/system/interrupt/system_interrupt.o
  .ARM.attributes
@@ -11799,7 +11799,7 @@ Discarded input sections
  .debug_macro   0x00000000     0x1e52 src/ASF/sam0/utils/cmsis/samd21/source/system_samd21.o
  .debug_macro   0x00000000       0x6d src/ASF/sam0/utils/cmsis/samd21/source/system_samd21.o
  .debug_line    0x00000000      0x605 src/ASF/sam0/utils/cmsis/samd21/source/system_samd21.o
- .debug_str     0x00000000    0x6d2a3 src/ASF/sam0/utils/cmsis/samd21/source/system_samd21.o
+ .debug_str     0x00000000    0x6d29e src/ASF/sam0/utils/cmsis/samd21/source/system_samd21.o
  .comment       0x00000000       0x5a src/ASF/sam0/utils/cmsis/samd21/source/system_samd21.o
  .debug_frame   0x00000000       0x30 src/ASF/sam0/utils/cmsis/samd21/source/system_samd21.o
  .ARM.attributes
@@ -14917,86 +14917,86 @@ OUTPUT(samd21_bootloader.elf elf32-littlearm)
  .debug_line    0x000226ba      0x40c src/ASF/sam0/utils/syscalls/gcc/syscalls.o
  .debug_line    0x00022ac6     0x185c src/main.o
 
-.debug_str      0x00000000    0xa2ecf
- .debug_str     0x00000000    0x933d4 drivers/gsm_driver.o
-                              0x94027 (size before relaxing)
- .debug_str     0x000933d4     0x2076 drivers/lcd_driver.o
-                              0x941ab (size before relaxing)
- .debug_str     0x0009544a      0x47a drivers/sam_ba_monitor.o
-                              0x93fde (size before relaxing)
- .debug_str     0x000958c4       0x7e drivers/yalgo.o
-                               0x9939 (size before relaxing)
- .debug_str     0x00095942      0x61e src/ASF/common2/components/memory/serial_flash/at25dfx/at25dfx.o
-                              0x850e5 (size before relaxing)
- .debug_str     0x00095f60      0xb26 src/ASF/sam0/drivers/extint/extint_sam_d_r_h/extint.o
-                              0x84ba0 (size before relaxing)
- .debug_str     0x00096a86      0x380 src/ASF/sam0/drivers/sercom/sercom.o
-                              0x84a24 (size before relaxing)
- .debug_str     0x00096e06     0x1a91 src/ASF/sam0/drivers/usb/stack_interface/usb_device_udd.o
-                              0x919c2 (size before relaxing)
- .debug_str     0x00098897       0xa6 src/ASF/sam0/drivers/usb/stack_interface/usb_dual.o
-                              0x8fce2 (size before relaxing)
- .debug_str     0x0009893d      0x45d src/ASF/thirdparty/freertos/freertos-10.0.0/Source/portable/GCC/ARM_CM0/port.o
-                              0x87a73 (size before relaxing)
- .debug_str     0x00098d9a       0xe4 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/portable/MemMang/heap_3.o
-                              0x8733e (size before relaxing)
- .debug_str     0x00098e7e      0x15a src/ASF/thirdparty/freertos/freertos-10.0.0/Source/list.o
-                              0x86df7 (size before relaxing)
- .debug_str     0x00098fd8      0x913 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/queue.o
-                              0x88501 (size before relaxing)
- .debug_str     0x000998eb     0x10a5 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/tasks.o
-                              0x88f6b (size before relaxing)
- .debug_str     0x0009a990      0x4e5 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/timers.o
-                              0x88915 (size before relaxing)
- .debug_str     0x0009ae75      0x199 src/ASF/sam0/drivers/wdt/wdt_callback.o
-                              0x83fa8 (size before relaxing)
- .debug_str     0x0009b00e      0x851 src/ASF/sam0/drivers/usb/usb_sam_d_r/usb.o
-                              0x85e4e (size before relaxing)
- .debug_str     0x0009b85f      0x370 src/ASF/sam0/drivers/sercom/usart/usart.o
-                              0x857dd (size before relaxing)
- .debug_str     0x0009bbcf      0x17c src/ASF/sam0/drivers/sercom/usart/usart_interrupt.o
-                              0x84a23 (size before relaxing)
- .debug_str     0x0009bd4b      0x540 src/ASF/sam0/drivers/sercom/spi/spi.o
-                              0x85e15 (size before relaxing)
- .debug_str     0x0009c28b      0x159 src/ASF/sam0/drivers/sercom/spi/spi_interrupt.o
-                              0x84cd1 (size before relaxing)
- .debug_str     0x0009c3e4      0x158 src/ASF/sam0/drivers/sercom/sercom_interrupt.o
-                              0x848bf (size before relaxing)
- .debug_str     0x0009c53c      0x131 src/ASF/sam0/drivers/extint/extint_callback.o
-                              0x83b74 (size before relaxing)
- .debug_str     0x0009c66d       0x37 src/ASF/common2/services/delay/sam0/cycle_counter.o
-                              0x83600 (size before relaxing)
- .debug_str     0x0009c6a4       0x34 src/ASF/common/services/sleepmgr/samd/sleepmgr.o
-                              0x834e3 (size before relaxing)
- .debug_str     0x0009c6d8      0xcb5 src/ASF/common/services/usb/class/cdc/device/udi_cdc.o
-                              0x90a10 (size before relaxing)
- .debug_str     0x0009d38d      0x89c src/ASF/common/services/usb/udc/udc.o
-                              0x9056f (size before relaxing)
- .debug_str     0x0009dc29      0x2df src/ASF/common/services/usb/class/cdc/device/udi_cdc_desc.o
-                              0x90131 (size before relaxing)
- .debug_str     0x0009df08      0xb41 src/ASF/sam0/drivers/nvm/nvm.o
-                              0x84af9 (size before relaxing)
- .debug_str     0x0009ea49       0x59 src/ASF/sam0/drivers/port/port.o
-                              0x8375d (size before relaxing)
- .debug_str     0x0009eaa2      0x49d src/ASF/sam0/services/eeprom/emulator/main_array/eeprom.o
-                              0x84167 (size before relaxing)
- .debug_str     0x0009ef3f       0x3e src/ASF/common2/boards/user_board/init.o
-                              0x8fc5c (size before relaxing)
- .debug_str     0x0009ef7d       0x37 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
-                              0x83331 (size before relaxing)
- .debug_str     0x0009efb4     0x22fa src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da_ha1/clock.o
-                              0x865bd (size before relaxing)
- .debug_str     0x000a12ae      0x1c2 src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da_ha1/gclk.o
-                              0x83ff4 (size before relaxing)
- .debug_str     0x000a1470      0x179 src/ASF/sam0/drivers/system/pinmux/pinmux.o
-                              0x837d3 (size before relaxing)
- .debug_str     0x000a15e9       0x47 src/ASF/sam0/drivers/system/system.o
-                              0x8340e (size before relaxing)
- .debug_str     0x000a1630      0x8ef src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
-                              0x6e420 (size before relaxing)
- .debug_str     0x000a1f1f      0x685 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
-                               0x7439 (size before relaxing)
- .debug_str     0x000a25a4      0x92b src/main.o
+.debug_str      0x00000000    0xa2e69
+ .debug_str     0x00000000    0x933cf drivers/gsm_driver.o
+                              0x94022 (size before relaxing)
+ .debug_str     0x000933cf     0x2076 drivers/lcd_driver.o
+                              0x941a6 (size before relaxing)
+ .debug_str     0x00095445      0x47a drivers/sam_ba_monitor.o
+                              0x93fd9 (size before relaxing)
+ .debug_str     0x000958bf       0x7e drivers/yalgo.o
+                               0x9934 (size before relaxing)
+ .debug_str     0x0009593d      0x61e src/ASF/common2/components/memory/serial_flash/at25dfx/at25dfx.o
+                              0x850e0 (size before relaxing)
+ .debug_str     0x00095f5b      0xb26 src/ASF/sam0/drivers/extint/extint_sam_d_r_h/extint.o
+                              0x84b9b (size before relaxing)
+ .debug_str     0x00096a81      0x380 src/ASF/sam0/drivers/sercom/sercom.o
+                              0x84a1f (size before relaxing)
+ .debug_str     0x00096e01     0x1a91 src/ASF/sam0/drivers/usb/stack_interface/usb_device_udd.o
+                              0x919bd (size before relaxing)
+ .debug_str     0x00098892       0xa6 src/ASF/sam0/drivers/usb/stack_interface/usb_dual.o
+                              0x8fcdd (size before relaxing)
+ .debug_str     0x00098938      0x45d src/ASF/thirdparty/freertos/freertos-10.0.0/Source/portable/GCC/ARM_CM0/port.o
+                              0x87a6e (size before relaxing)
+ .debug_str     0x00098d95       0xe4 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/portable/MemMang/heap_3.o
+                              0x87339 (size before relaxing)
+ .debug_str     0x00098e79      0x15a src/ASF/thirdparty/freertos/freertos-10.0.0/Source/list.o
+                              0x86df2 (size before relaxing)
+ .debug_str     0x00098fd3      0x913 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/queue.o
+                              0x884fc (size before relaxing)
+ .debug_str     0x000998e6     0x10a5 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/tasks.o
+                              0x88f66 (size before relaxing)
+ .debug_str     0x0009a98b      0x4e5 src/ASF/thirdparty/freertos/freertos-10.0.0/Source/timers.o
+                              0x88910 (size before relaxing)
+ .debug_str     0x0009ae70      0x199 src/ASF/sam0/drivers/wdt/wdt_callback.o
+                              0x83fa3 (size before relaxing)
+ .debug_str     0x0009b009      0x851 src/ASF/sam0/drivers/usb/usb_sam_d_r/usb.o
+                              0x85e49 (size before relaxing)
+ .debug_str     0x0009b85a      0x370 src/ASF/sam0/drivers/sercom/usart/usart.o
+                              0x857d8 (size before relaxing)
+ .debug_str     0x0009bbca      0x17c src/ASF/sam0/drivers/sercom/usart/usart_interrupt.o
+                              0x84a1e (size before relaxing)
+ .debug_str     0x0009bd46      0x540 src/ASF/sam0/drivers/sercom/spi/spi.o
+                              0x85e10 (size before relaxing)
+ .debug_str     0x0009c286      0x159 src/ASF/sam0/drivers/sercom/spi/spi_interrupt.o
+                              0x84ccc (size before relaxing)
+ .debug_str     0x0009c3df      0x158 src/ASF/sam0/drivers/sercom/sercom_interrupt.o
+                              0x848ba (size before relaxing)
+ .debug_str     0x0009c537      0x131 src/ASF/sam0/drivers/extint/extint_callback.o
+                              0x83b6f (size before relaxing)
+ .debug_str     0x0009c668       0x37 src/ASF/common2/services/delay/sam0/cycle_counter.o
+                              0x835fb (size before relaxing)
+ .debug_str     0x0009c69f       0x34 src/ASF/common/services/sleepmgr/samd/sleepmgr.o
+                              0x834de (size before relaxing)
+ .debug_str     0x0009c6d3      0xcb5 src/ASF/common/services/usb/class/cdc/device/udi_cdc.o
+                              0x90a0b (size before relaxing)
+ .debug_str     0x0009d388      0x89c src/ASF/common/services/usb/udc/udc.o
+                              0x9056a (size before relaxing)
+ .debug_str     0x0009dc24      0x2df src/ASF/common/services/usb/class/cdc/device/udi_cdc_desc.o
+                              0x9012c (size before relaxing)
+ .debug_str     0x0009df03      0xb41 src/ASF/sam0/drivers/nvm/nvm.o
+                              0x84af4 (size before relaxing)
+ .debug_str     0x0009ea44       0x59 src/ASF/sam0/drivers/port/port.o
+                              0x83758 (size before relaxing)
+ .debug_str     0x0009ea9d      0x49d src/ASF/sam0/services/eeprom/emulator/main_array/eeprom.o
+                              0x84162 (size before relaxing)
+ .debug_str     0x0009ef3a       0x3e src/ASF/common2/boards/user_board/init.o
+                              0x8fc57 (size before relaxing)
+ .debug_str     0x0009ef78       0x37 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+                              0x8332c (size before relaxing)
+ .debug_str     0x0009efaf     0x22fa src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da_ha1/clock.o
+                              0x865b8 (size before relaxing)
+ .debug_str     0x000a12a9      0x1c2 src/ASF/sam0/drivers/system/clock/clock_samd21_r21_da_ha1/gclk.o
+                              0x83fef (size before relaxing)
+ .debug_str     0x000a146b      0x179 src/ASF/sam0/drivers/system/pinmux/pinmux.o
+                              0x837ce (size before relaxing)
+ .debug_str     0x000a15e4       0x47 src/ASF/sam0/drivers/system/system.o
+                              0x83409 (size before relaxing)
+ .debug_str     0x000a162b      0x8ef src/ASF/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.o
+                              0x6e41b (size before relaxing)
+ .debug_str     0x000a1f1a      0x685 src/ASF/sam0/utils/syscalls/gcc/syscalls.o
+                               0x7434 (size before relaxing)
+ .debug_str     0x000a259f      0x8ca src/main.o
                               0x96253 (size before relaxing)
 
 .debug_frame    0x00000000     0x420c

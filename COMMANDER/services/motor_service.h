@@ -122,6 +122,12 @@ volatile bool motorFeedbackEvent;
 volatile uint32_t motorFeedbackEventTime;
 volatile bool buttonEventOccured;
 
+volatile bool lcdButtonEventOccured;
+volatile bool lcdButtonCycleDetected;
+volatile bool lcdButtonDown;
+volatile uint32_t lcdButtonDownTime;
+
+
 volatile bool waterEventOccured;
 
 //////////////////////////////////////////////////////////////////////////
@@ -355,6 +361,7 @@ void configure_event(void);
 
 void buttonFilter(void);
 void operateOnButtonEvent(void);
+void operateOnLCDButtonEvent(void);
 
 void setDisplayPause(bool);
 

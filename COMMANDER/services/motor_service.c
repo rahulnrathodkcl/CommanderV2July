@@ -1856,6 +1856,12 @@ static void button_detect_pin_callback(void)
 	//	xTaskNotifyGive(fiftymsTask);
 }
 
+static void lcd_button_pin_callback(void)
+{
+	lcdButtonEventOccured = true;
+}
+
+
 static void vTask_MOTORCONTROL(void *params)
 {
 	UNUSED(params);
@@ -1897,7 +1903,7 @@ static void vTask_MOTORCONTROL(void *params)
 	
 	startTimerOn = false;
 
-	singlePhasingTime = 10;
+	singlePhasingTime = 50;
 	singlePhasingTimerOn = false;
 
 	startSequenceTimerTime = 20;
@@ -2010,6 +2016,11 @@ static void vTask_MOTORCONTROL(void *params)
 			if(lastButtonEvent)
 			{
 				buttonFilter();
+			}
+			if(lcdButtonCycleDetected)
+			{
+				lcdButtonCycleDetected=false;
+				setDisplayPause(!varPauseDisplay);	
 			}
 		}
 		//// check if it is the time for new Voltage reading and if so than get new Voltage Reading.
@@ -2195,10 +2206,10 @@ void start_motor_service(void)
 	config_extint_chan.gpio_pin = LCD_SHOW_BUTTON_EIC_PIN;
 	config_extint_chan.gpio_pin_mux = LCD_SHOW_BUTTON_EIC_MUX;
 	config_extint_chan.gpio_pin_pull = EXTINT_PULL_UP;
-	config_extint_chan.detection_criteria = EXTINT_DETECT_FALLING;
+	config_extint_chan.detection_criteria = EXTINT_DETECT_BOTH;
 	extint_chan_set_config(LCD_SHOW_BUTTON_EIC_LINE, &config_extint_chan);
 	extint_chan_enable_callback(LCD_SHOW_BUTTON_EIC_LINE, EXTINT_CALLBACK_TYPE_DETECT);
-	extint_register_callback(button_detect_pin_callback,LCD_SHOW_BUTTON_EIC_LINE,EXTINT_CALLBACK_TYPE_DETECT);
+	extint_register_callback(lcd_button_pin_callback,LCD_SHOW_BUTTON_EIC_LINE,EXTINT_CALLBACK_TYPE_DETECT);
 	////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////
@@ -2366,6 +2377,42 @@ void operateOnButtonEvent(void)
 		lastPressTime= xTaskGetTickCount();
 		lastButtonEvent=BTNEVENTLCDSHOW;
 	}
+	
+	//if(lastButtonEvent==BTNEVENTLCDSHOW && LCDSHOW_BUTTON_INPUT_NOT_COMES && (xTaskGetTickCount()-lastPressTime>2000))
+	//{
+		//lastButtonEvent=BTNEVENTLCD;
+		//
+	//}
+}
+
+void operateOnLCDButtonEvent(void)
+{
+	lcdButtonEventOccured=false;
+	if(LCDSHOW_BUTTON_INPUT_COMES)
+	{
+		lcdButtonDown=true;
+		lcdButtonDownTime= xTaskGetTickCount();
+	}
+	
+	if(lcdButtonDown && LCDSHOW_BUTTON_INPUT_NOT_COMES)
+	{
+		if((xTaskGetTickCount()-lcdButtonDownTime>1000))
+		{
+			lcdButtonDown=false;
+			lcdButtonCycleDetected=true;
+		}
+	}
+	
+	if(lcdButtonDown && xTaskGetTickCount()-lcdButtonDownTime>4000)
+	{
+		lcdButtonDown=false;
+	}
+	
+	//if(lastButtonEvent==BTNEVENTLCDSHOW && LCDSHOW_BUTTON_INPUT_NOT_COMES && (xTaskGetTickCount()-lastPressTime>2000))
+	//{
+	//lastButtonEvent=BTNEVENTLCD;
+	//
+	//}
 }
 
 void buttonFilter(void)
@@ -2399,8 +2446,8 @@ void buttonFilter(void)
 		}
 		else if(lastButtonEvent==BTNEVENTLCDSHOW && LCDSHOW_BUTTON_INPUT_COMES)
 		{
-			lastButtonEvent=0;
-			setDisplayPause(!varPauseDisplay);
+			//lastButtonEvent=0;
+			//setDisplayPause(!varPauseDisplay);
 		}
 		else
 		{
@@ -2467,6 +2514,7 @@ static void vTask_50ms_Timer(void *params)
 {
 	TickType_t xLastExecutionGsm_Send_Time;
 	xLastExecutionGsm_Send_Time = xTaskGetTickCount();
+	uint8_t cnt;
 	//--------------------------------
 	for( ;; )
 	{
@@ -2476,8 +2524,16 @@ static void vTask_50ms_Timer(void *params)
 			operateOnButtonEvent();
 		}
 
+		if(lcdButtonEventOccured)
+		{
+			operateOnLCDButtonEvent();
+			cnt=0;
+		}
+		
 		xSemaphoreTake(xButton_Semaphore,portMAX_DELAY);
-		if(lastButtonEvent>0)
+		
+		
+		if((lastButtonEvent>0) || lcdButtonCycleDetected)
 		{
 			taskPSet=true;
 			vTaskPrioritySet(motorTask,2);
