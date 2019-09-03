@@ -1068,9 +1068,9 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 		{
 			STARTIME = 2;
 		}
-		if (STARTIME > 1200)
+		if (STARTIME > 65000)
 		{
-			STARTIME = 1200;
+			STARTIME = 65000;
 		}
 		saveStarDeltaTimer(STARTIME);
 		
@@ -1450,10 +1450,7 @@ static void vTask_GSM_service(void *params)
 	retries=0;
 	
 	mcuWakeUpFromSleep=false;
-	isGSMModuleAwake=false;
-	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
-	lastGSMCommunicationTime=0;
-	gsm_module_exit_sleep(false);				//to switch DTR pin so that sim remains active
+	
 	
 	if (factory_settings_parameter_struct.ENABLE_CURRENT)
 	{
@@ -1479,6 +1476,11 @@ static void vTask_GSM_service(void *params)
 		vTaskDelay(5000);
 	}
 	
+	isGSMModuleAwake=false;
+	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
+	lastGSMCommunicationTime=0;
+	gsm_module_exit_sleep(false);				//to switch DTR pin so that sim remains active
+
 	for (;;)
 	{
 		if (GSM_STATUS_OK)
@@ -1542,6 +1544,19 @@ static void vTask_GSM_service(void *params)
 					{
 						gsm_send_sms(ADMIN_1_MOBILE_NUMBER_PAGE,uResp_SMS);
 					}
+					
+					bootloader_parameter.ulongintDiscard = 0;
+					bootloader_parameter.firmware_download_pending = false;
+					bootloader_parameter.firmware_update_process_completed = false;
+					bootloader_parameter.firmware_update_error_code = 0;
+					bootloader_parameter.retries = 0;
+					
+					memset(bootloader_parameter.firmware_updater_mobile_no, '\0', sizeof(bootloader_parameter.firmware_updater_mobile_no));
+					strcpy(bootloader_parameter.firmware_updater_mobile_no,"0000000000");
+					
+					memcpy(page_data,&bootloader_parameter,sizeof(bootloader_parameter));
+                    eeprom_emulator_write_page(BOOTLOADER_PARAMETER_PAGE, page_data);
+					eeprom_emulator_commit_page_buffer();
 				}
 				
 				if ((boolOne_Time_Msg_Delete_Flag == false) && (boolGsm_config_flag == true))

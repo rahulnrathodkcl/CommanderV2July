@@ -6,7 +6,7 @@
 #include "motor_service.h"
 #include "lcd_driver.h"
 
-#define VERSION_NO "  B20-05-08-19  "
+#define VERSION_NO "  B24-03-09-19  "
 
 
 volatile bool mcuWakeUpFromSleep;

@@ -1289,8 +1289,8 @@ void operateOnEvent(void)
 		}
 		///////////////////////// SINGLE PHASING CHECK /////////////////////////
 		else if (user_settings_parameter_struct.detectSinglePhasing &&																						//SPP IS ON
-		t3Phase==AC_2PH &&																														// Only 2 Phase Present
-		tacPhase) ////single phasing occured																									// AC Phase is Present
+		t3Phase==AC_2PH) /*&&																														// Only 2 Phase Present
+		tacPhase)*/ ////single phasing occured																									// AC Phase is Present
 		{
 			tempSinglePhasingTimer = xTaskGetTickCount();
 			singlePhasingTimerOn = true;
@@ -1592,7 +1592,7 @@ void terminateStartRelay(void)
 {
 	if (startSequenceOn &&  xTaskGetTickCount() - tempStartSequenceTimer > (startSequenceTimerTime * 100))
 	{
-		if(((unsigned int)user_settings_parameter_struct.starDeltaTimerAddress *10) <= startSequenceTimerTime)
+		if((((unsigned int)user_settings_parameter_struct.starDeltaTimerAddress) * 1000) <= (((uint16_t)startSequenceTimerTime)*100))
 		{
 			START_RELAY_OFF;
 			tempStartSequenceTimer=xTaskGetTickCount();
@@ -1761,7 +1761,7 @@ bool MotorVoltageBypassTimerOver(void)
 
 void checkCurrentConsumption(void)
 {
-	if(startSequenceOn || stopSequenceOn || !getMotorState() || !(user_settings_parameter_struct.currentDetectionAddress))
+	if(startSequenceOn || stopSequenceOn || !getMotorState() || !(user_settings_parameter_struct.currentDetectionAddress) || starDeltaTimerOn)
 	{
 		return;
 	}
@@ -1818,11 +1818,11 @@ void checkCurrentConsumption(void)
 		temp2 = CR_UNDER;
 		overLoadDetectValue=overLoadDetectValue>>2;
 	}
-	else if(starDeltaTimerOn && enableCurrentBuffer && temp < (user_settings_parameter_struct.underloadAddress>>1))
-	{
-		temp2 = CR_UNDER;
-		overLoadDetectValue=overLoadDetectValue>>2;
-	}
+	//else if(starDeltaTimerOn && enableCurrentBuffer && temp < (user_settings_parameter_struct.underloadAddress>>1))
+	//{
+		//temp2 = CR_UNDER;
+		//overLoadDetectValue=overLoadDetectValue>>2;
+	//}
 	else
 	{
 		temp2= CR_NORMAL;

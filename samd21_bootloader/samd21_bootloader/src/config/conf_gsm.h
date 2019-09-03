@@ -12,7 +12,7 @@
  *  @{
  */
 #define GSM_SERCOM                     SERCOM3
-#define GSM_BAUDRATE				   115200
+#define GSM_BAUDRATE				   19200
 #define GSM_SERCOM_MUX                 USART_RX_1_TX_0_XCK_1
 #define GSM_SERCOM_PAD0_MUX            PINMUX_PA22C_SERCOM3_PAD0
 #define GSM_SERCOM_PAD1_MUX            PINMUX_PA23C_SERCOM3_PAD1

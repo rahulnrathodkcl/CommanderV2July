@@ -127,7 +127,7 @@ void gsm_module_exit_sleep(bool calledFromRead)
 
 void gsm_module_enter_sleep(void)
 {
-	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_DEACTIVE);
+	//port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_DEACTIVE);
 	isGSMModuleAwake = false;
 }
 

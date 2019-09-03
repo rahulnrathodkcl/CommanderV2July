@@ -206,11 +206,11 @@ int main (void)
 	for (uint8_t i=0;i<16;i++)
 	{
 		LCD_write(0);
-		delay_ms(100);
+		delay_ms(20);
 	}
 	LCD_clear();
 	lcd_printf(" CHECKING MODE ");
-	delay_ms(1000);
+	delay_ms(500);
 	#endif
 	
 	//////////////////////////////////////////////////////////////////////////
@@ -218,7 +218,7 @@ int main (void)
 	//////////////////////////////////////////////////////////////////////////
 	
 	#ifdef LCD_SUPPORT
-	delay_ms(1000);
+	delay_ms(500);
 	LCD_clear();
 	lcd_printf(" CHECKING FLASH  ");
 	LCD_setCursor(0,1);
@@ -229,7 +229,7 @@ int main (void)
 	{
 		#ifdef LCD_SUPPORT
 		lcd_printf("     FAILED     ");
-		delay_ms(2000);
+		delay_ms(1000);
 		#endif
 		
 		start_application();
@@ -239,7 +239,7 @@ int main (void)
 	{
 		#ifdef LCD_SUPPORT
 		lcd_printf("       OK       ");
-		delay_ms(2000);
+		delay_ms(1000);
 		#endif
 	}
 	#endif
@@ -299,6 +299,8 @@ static void vTask_FTP(void *params)
 	
 	gsm_init();
 	
+	
+	
 	#ifdef LCD_SUPPORT
 	LCD_clear();
 	lcd_printf("    STARTING    ");
@@ -325,6 +327,11 @@ static void vTask_FTP(void *params)
 		GSM_PWR_OFF;
 		vTaskDelay(5000);
 	}
+	
+	port_pin_set_output_level(GSM_DTR_PIN,GSM_DTR_PIN_ACTIVE);
+	vTaskDelay(100/portTICK_PERIOD_MS);
+	
+	
 	uint8_t ucharCounter=0;
 	for (;;)
 	{
@@ -630,7 +637,7 @@ void start_application(void)
 	#ifdef LCD_SUPPORT
 	LCD_setCursor(0,1);
 	lcd_printf("APPLICATION MODE");
-	delay_ms(2000);
+	delay_ms(500);
 	#endif
 	
 	/* Re base the Stack Pointer */
@@ -658,7 +665,7 @@ void check_boot_mode(void)
 	
 	#ifdef USB_DEVIDE_MODE_BOOT_SUPPORT
 	udc_start();
-	delay_ms(2000);
+	delay_ms(800);
 	if (main_b_cdc_enable)
 	{
 		#ifdef LCD_SUPPORT
