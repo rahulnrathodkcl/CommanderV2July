@@ -299,6 +299,7 @@ static void vTask_FTP(void *params)
 	
 	gsm_init();
 	
+	
 	#ifdef LCD_SUPPORT
 	LCD_clear();
 	lcd_printf("    STARTING    ");
@@ -311,6 +312,9 @@ static void vTask_FTP(void *params)
 	pin_conf_gsm_status.direction  = PORT_PIN_DIR_INPUT;
 	pin_conf_gsm_status.input_pull = PORT_PIN_PULL_NONE;
 	port_pin_set_config(GSM_STATUS_POSITION, &pin_conf_gsm_status);
+	
+	port_pin_set_output_level(GSM_DTR_PIN,GSM_DTR_PIN_ACTIVE); //disable sleep mode
+	vTaskDelay(100);
 	
 	
 	if(GSM_STATUS_OK)

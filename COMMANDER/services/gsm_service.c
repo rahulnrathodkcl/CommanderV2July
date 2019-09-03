@@ -1419,7 +1419,12 @@ static void vTask_GSM_service(void *params)
 	pin_conf_gsm_status.input_pull = PORT_PIN_PULL_NONE;
 	port_pin_set_config(GSM_STATUS_POSITION, &pin_conf_gsm_status);
 	
+	
+	
 	gsm_init();
+	
+	
+	
 	
 	initialized = false;
 	
@@ -1450,10 +1455,7 @@ static void vTask_GSM_service(void *params)
 	retries=0;
 	
 	mcuWakeUpFromSleep=false;
-	isGSMModuleAwake=false;
-	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
-	lastGSMCommunicationTime=0;
-	gsm_module_exit_sleep(false);				//to switch DTR pin so that sim remains active
+	
 	
 	if (factory_settings_parameter_struct.ENABLE_CURRENT)
 	{
@@ -1478,6 +1480,13 @@ static void vTask_GSM_service(void *params)
 		GSM_PWR_OFF;
 		vTaskDelay(5000);
 	}
+
+
+	isGSMModuleAwake=false;
+	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
+	lastGSMCommunicationTime=0;
+	gsm_module_exit_sleep(false);				//to switch DTR pin so that sim remains active
+
 	
 	for (;;)
 	{

@@ -63,7 +63,7 @@ void gsm_init(void)
 	/* Configure pin to control the GSM module sleep state */
 	gsm_pin_config.direction = PORT_PIN_DIR_OUTPUT;
 	port_pin_set_config(GSM_DTR_PIN, &gsm_pin_config);
-	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
+	port_pin_set_output_level(GSM_DTR_PIN, !GSM_DTR_PIN_ACTIVE);
 	
 	
 	gsm_rx_queue = xQueueCreate(240, sizeof(uint8_t));

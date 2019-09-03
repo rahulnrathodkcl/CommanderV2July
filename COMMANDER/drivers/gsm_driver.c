@@ -92,7 +92,7 @@ void gsm_init(void)
 	gsm_cmd_timeout_timer = xTimerCreate((const char *)"GSM Timeout",GSM_TIMEOUT_PERIOD_TICKS, pdFALSE, NULL, gsm_timer_callback);
 	vSemaphoreCreateBinary(gsm_busy_semaphore);
 	
-	isRinging = false;
+	//isRinging = false;
 	
 	
 	struct usart_config config_usart;
@@ -991,8 +991,11 @@ enum gsm_error gsm_config_module(void)
 												{
 													if (gsm_enable_DTMF_detection() == GSM_ERROR_NONE)
 													{
-														if (gsm_set_no_sleep_mode()==GSM_ERROR_NONE)
+														if (gsm_enable_sleep_mode()==GSM_ERROR_NONE)
 														{
+															// Deactive the DTR pin, as it will remove the connection of Transistor with SIM800C DTR pin
+															//port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_DEACTIVE);
+															
 															if (gsm_store_active_profile() == GSM_ERROR_NONE)
 															{
 																return GSM_ERROR_NONE;
