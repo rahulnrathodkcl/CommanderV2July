@@ -810,7 +810,7 @@ uint16_t filterVoltage(enum phaseReading phase,uint16_t voltReading)
 		//{
 		//return p1->rmsVoltage;
 		//}
-		if((p1->rmsVoltage - voltReading)<(p1->rmsVoltage * 10/100))
+		if((p1->rmsVoltage - voltReading)<(p1->rmsVoltage * 40/100))
 		{
 			return p1->rmsVoltage;
 		}
@@ -890,6 +890,11 @@ void detect_Three_Phase_Voltage(void) {
 
 //Function to set the Three Phase State from acquired voltage
 void set_Three_Phase_State_From_Voltage(void) {
+	
+	if(startSequenceOn)
+	{
+		return;
+	}
 	
 	uint8_t temp_phase_state = structThreePhase_state.u8t_phase_ac_state;		//save last AC Phase State, in case AC Phase State is going to change
 	
@@ -1820,8 +1825,8 @@ void checkCurrentConsumption(void)
 	}
 	//else if(starDeltaTimerOn && enableCurrentBuffer && temp < (user_settings_parameter_struct.underloadAddress>>1))
 	//{
-		//temp2 = CR_UNDER;
-		//overLoadDetectValue=overLoadDetectValue>>2;
+	//temp2 = CR_UNDER;
+	//overLoadDetectValue=overLoadDetectValue>>2;
 	//}
 	else
 	{
@@ -1897,7 +1902,7 @@ static void vTask_MOTORCONTROL(void *params)
 	
 	startTimerOn = false;
 
-	singlePhasingTime = 10;
+	singlePhasingTime = 6;
 	singlePhasingTimerOn = false;
 
 	startSequenceTimerTime = 20;

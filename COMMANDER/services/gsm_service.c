@@ -1393,6 +1393,67 @@ void getSystemTime(uint8_t *Hours, uint8_t *Minutes)
 	}
 }
 
+
+bool checkSMSForPassCode(char *receivedSMS)
+{
+	char passCode[10]={0};
+	uint32_t pCodeint = factory_settings_parameter_struct.DeviceId_ee + (factory_settings_parameter_struct.dateCode/2);
+	pCodeint = pCodeint >> 4;
+	pCodeint = pCodeint << 4;
+	pCodeint = pCodeint % 1000000L;
+	
+	sprintf(passCode, "~%u~",pCodeint);
+	
+	if(strstr(receivedSMS,passCode))							//check passCode exists
+	{
+		memmove(receivedSMS,receivedSMS+strlen(passCode),strlen(receivedSMS));		//discard passPhrase
+		return true;
+	}
+
+	return false;	
+}
+
+void sendFWUpdateSMS(void)
+{
+	if(bootloader_parameter.firmware_update_process_completed)
+	{
+		char uResp_SMS[25]={0};
+		
+		/*Firmware update Completed Successfully*/
+		if(bootloader_parameter.firmware_update_error_code==0)
+		{
+			strcpy(uResp_SMS,"F/W Update Completed");
+		}
+		/*Error in Firmware update*/
+		else
+		{
+			strcpy(uResp_SMS,"F/W Update Error");
+		}
+		
+		if(bootloader_parameter.firmware_updater_mobile_no[0]!='0')
+		{
+			gsm_send_sms(bootloader_parameter.firmware_updater_mobile_no,uResp_SMS);
+		}
+		else
+		{
+			gsm_send_sms(ADMIN_1_MOBILE_NUMBER_PAGE,uResp_SMS);
+		}
+		
+		bootloader_parameter.ulongintDiscard = 0;
+		bootloader_parameter.firmware_download_pending = false;
+		bootloader_parameter.firmware_update_process_completed = false;
+		bootloader_parameter.firmware_update_error_code = 0;
+		bootloader_parameter.retries = 0;
+		
+		memset(bootloader_parameter.firmware_updater_mobile_no, '\0', sizeof(bootloader_parameter.firmware_updater_mobile_no));
+		strcpy(bootloader_parameter.firmware_updater_mobile_no,"0000000000");
+		
+		memcpy(page_data,&bootloader_parameter,sizeof(bootloader_parameter));
+		eeprom_emulator_write_page(BOOTLOADER_PARAMETER_PAGE, page_data);
+		eeprom_emulator_commit_page_buffer();
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 //------------GSM OPERATION----------------------$$$$$$$$$$$$$$
 #define GSM_STATUS_POSITION		PIN_PA27
@@ -1448,7 +1509,7 @@ static void vTask_GSM_service(void *params)
 	stagedEventType = 'N';
 	isRegisteredNumber=false;
 	retries=0;
-	
+	autoNetworkDetection=false;
 	mcuWakeUpFromSleep=false;
 	
 	
@@ -1483,6 +1544,21 @@ static void vTask_GSM_service(void *params)
 
 	for (;;)
 	{
+
+		/************************************************************************/
+		/*  Check for Call Timer Expire in case GSM Status is not OK            */
+		/************************************************************************/
+		if (currentStatus == 'I' || currentStatus == 'R')
+		{
+			if (callTimerExpire())
+			{
+				char t1 = actionType;
+				endCall();
+				checkRespSMS(t1);
+			}
+		}
+		/************************************************************************/
+		
 		if (GSM_STATUS_OK)
 		{
 			if (boolGsm_config_flag == false)
@@ -1492,11 +1568,15 @@ static void vTask_GSM_service(void *params)
 				{
 					if(gsm_config_module()==GSM_ERROR_NONE)
 					{
-						for (uint8_t i=0;i<20;i++)
+						if(gsm_enable_csqn_urc()==GSM_ERROR_NONE)
 						{
-							Signal_Strength = gsm_getsignalstrength();
-							vTaskDelay(50);
+							autoNetworkDetection = true;
 						}
+						//for (uint8_t i=0;i<20;i++)
+						//{
+							//Signal_Strength = gsm_getsignalstrength();
+							//vTaskDelay(50);
+						//}
 						boolGsm_config_flag = true;
 					}
 					else
@@ -1515,6 +1595,10 @@ static void vTask_GSM_service(void *params)
 				{
 					mcuWakeUpFromSleep=false;
 					gsm_module_exit_sleep(false);
+					if(gsm_enable_csqn_urc()==GSM_ERROR_NONE)
+					{
+						autoNetworkDetection = true;
+					}
 				}
 				
 				
@@ -1523,40 +1607,7 @@ static void vTask_GSM_service(void *params)
 				/************************************************************************/
 				if(bootloader_parameter.firmware_update_process_completed)
 				{
-					char uResp_SMS[30];
-					memset(uResp_SMS, '\0', sizeof(uResp_SMS));
-					/*Firmware update Completed Successfully*/
-					if(bootloader_parameter.firmware_update_error_code==0)
-					{
-						strcpy(uResp_SMS,"F/W Update Completed");
-					}
-					/*Error in Firmware update*/
-					else
-					{
-						strcpy(uResp_SMS,"F/W Update Error");
-					}
-				
-					if(bootloader_parameter.firmware_updater_mobile_no[0]!='0')
-					{
-						gsm_send_sms(bootloader_parameter.firmware_updater_mobile_no,uResp_SMS);
-					}
-					else
-					{
-						gsm_send_sms(ADMIN_1_MOBILE_NUMBER_PAGE,uResp_SMS);
-					}
-					
-					bootloader_parameter.ulongintDiscard = 0;
-					bootloader_parameter.firmware_download_pending = false;
-					bootloader_parameter.firmware_update_process_completed = false;
-					bootloader_parameter.firmware_update_error_code = 0;
-					bootloader_parameter.retries = 0;
-					
-					memset(bootloader_parameter.firmware_updater_mobile_no, '\0', sizeof(bootloader_parameter.firmware_updater_mobile_no));
-					strcpy(bootloader_parameter.firmware_updater_mobile_no,"0000000000");
-					
-					memcpy(page_data,&bootloader_parameter,sizeof(bootloader_parameter));
-                    eeprom_emulator_write_page(BOOTLOADER_PARAMETER_PAGE, page_data);
-					eeprom_emulator_commit_page_buffer();
+					sendFWUpdateSMS();
 				}
 				
 				if ((boolOne_Time_Msg_Delete_Flag == false) && (boolGsm_config_flag == true))
@@ -1578,13 +1629,17 @@ static void vTask_GSM_service(void *params)
 					{
 						if(!getACPowerState() &&  isGSMModuleAwake && gsm_module_sleep_elligible())
 						{
-							gsm_module_enter_sleep();
+							if(gsm_disable_csqn_urc()==GSM_ERROR_NONE)
+							{
+								autoNetworkDetection=false;
+							}
+							gsm_module_enter_sleep();				//this statement goes after sending AT command, to ignore the wakeup of the module done by sending AT Command.
 						}
 
 						if(isGSMModuleAwake)
 						{
 							////Update network
-							if (xTaskGetTickCount() - network_update_time>= (1*60*1000))
+							if (!autoNetworkDetection && ((xTaskGetTickCount() - network_update_time)>= (1*60*1000)))
 							{
 								network_update_time = xTaskGetTickCount();
 								Signal_Strength = gsm_getsignalstrength();
@@ -1648,16 +1703,10 @@ static void vTask_GSM_service(void *params)
 							
 							StringtoUpperCase(Received_SMS);
 							
-							//char passCode[19];
-							//uint32_t pCodeint = factory_settings_parameter_struct.DeviceId_ee + factory_settings_parameter_struct.dateCode;
-							//uint32_t pcodeInt = pCodeint % 1000000L;
-							//
-							//sprintf(passCode,"~%6lu",pcodeInt);		//generate pass Phrase
-							//if(strstr(Received_SMS,passCode))							//check passCode exists
-							//{
-							//memmove(Received_SMS,Received_SMS+7,strlen(Received_SMS));		//discard passPhrase
-							//admin = true;													//set admin as true as passCode matches
-							//}
+							if(!admin)
+							{
+								admin = checkSMSForPassCode(Received_SMS);
+							}
 
 							if (admin || primaryUser || alterUsr)
 							{
@@ -1690,6 +1739,16 @@ static void vTask_GSM_service(void *params)
 								}
 							}
 							gsm_delete_all_sms();
+						}
+
+
+						/************************************************************************/
+						/* Automatic Detection of Network Using CSQN URC, and continue to next loop*/
+						/************************************************************************/
+						if(autoNetworkDetection && gsm_responseLine_isCSQN(response,&Signal_Strength))
+						{
+							lastGSMCommunicationTime=lastToLastGSMCommunicationTime;
+							continue;
 						}
 
 

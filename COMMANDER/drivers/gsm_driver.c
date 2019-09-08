@@ -55,7 +55,7 @@ static void gsm_rx_handler(uint8_t instance)
 			//lastGSMCommandTime=xTaskGetTickCountFromISR();
 			uint8_t data = (usart_hw->DATA.reg & SERCOM_USART_DATA_MASK);
 			xQueueSendFromISR(gsm_rx_queue, &data, NULL);
-			gsm_module_exit_sleep(true);
+			//gsm_module_exit_sleep(true);
 		}
 	}
 }
@@ -121,7 +121,7 @@ void gsm_module_exit_sleep(bool calledFromRead)
 			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 	}
-	
+	lastToLastGSMCommunicationTime=lastGSMCommunicationTime;
 	lastGSMCommunicationTime=xTaskGetTickCount();
 }
 
@@ -568,6 +568,17 @@ enum gsm_error gsm_disable_new_sms_message_indications(void)
 {
 	return gsm_send_at_command((const char*)("AT+CNMI=1,0,0,0,0\r"), (const char*)RESPONS_OK,5000,0,NULL);
 }
+
+enum gsm_error gsm_enable_csqn_urc(void)
+{
+	return gsm_send_at_command((const char*)("AT+EXUNSOL=\"SQ\",1\r"), (const char*)RESPONS_OK,1000,0,NULL);
+}
+
+enum gsm_error gsm_disable_csqn_urc(void)
+{
+	return gsm_send_at_command((const char*)("AT+EXUNSOL=\"SQ\",0\r"), (const char*)RESPONS_OK,1000,0,NULL);
+}
+
 
 enum gsm_error gsm_send_sms(const char *phone_number, const char *message)
 {
@@ -1094,6 +1105,11 @@ bool gsm_read_response_line(char *buffer,uint8_t length)
 		}
 	}
 
+	if(line_non_empty)
+	{
+		gsm_module_exit_sleep(true);
+	}
+
 	*(buffer) = '\0';
 	return line_non_empty;
 }
@@ -1132,6 +1148,60 @@ bool gsm_responseLine_isRinging(char *response)
 	{
 		return false;
 	}
+}
+
+bool gsm_responseLine_isCSQN(char *response,uint8_t *signal)
+{
+	if(strstr(response,"+CSQN"))
+	{
+		if (strstr(response,"99")==NULL)
+		{
+			char *ptr_tocken;
+			ptr_tocken = strtok(response,":");
+			ptr_tocken = strtok(NULL,":");
+			ptr_tocken = strtok(ptr_tocken,",");
+			RemoveSpaces(ptr_tocken);
+			uint8_t nw = atoi(ptr_tocken);
+			if (nw==0 || nw==1 || nw== 99)
+			{
+				*signal = 0;
+			}
+			else
+			{
+				if (nw>=2 && nw<=7)
+				{
+					*signal = 1;
+				}
+				else if (nw>=8 && nw<=13)
+				{
+					*signal = 2;
+				}
+				else if (nw>=14 && nw<=19)
+				{
+					*signal = 3;
+				}
+				else if (nw>=20 && nw<=25)
+				{
+					*signal = 4;
+				}
+				else if (nw>=26 && nw<=31)
+				{
+					*signal = 5;
+				}
+				else
+				{
+					*signal = 0;
+				}
+			}
+		}
+		else
+		{
+			*signal  = 0;
+		}
+		return true;
+	}
+	
+	return false;
 }
 
 bool gsm_responseLine_get_IncommingCallNo(char *response,char *phone_number)

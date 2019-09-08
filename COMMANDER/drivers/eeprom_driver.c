@@ -190,7 +190,7 @@ void init_eeprom(void)
 		user_settings_parameter_struct.waterBypassAddress			= false;
 		
 		user_settings_parameter_struct.detectSinglePhasing			= true;
-		user_settings_parameter_struct.singlePhasingVoltage			= 100;
+		user_settings_parameter_struct.singlePhasingVoltage			= 80;
 		user_settings_parameter_struct.detectPhaseSequence			= true;
 		user_settings_parameter_struct.detectMotorFeedback			= MOTORFEEDBACK_DETECTION_ON;
 		user_settings_parameter_struct.over_under_DetectionMethod	= MOTOR_UNDEROVER_DETECTION_CURRENT;

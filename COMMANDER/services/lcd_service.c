@@ -127,8 +127,6 @@ static void lcd_displaying_task(void *params)
 			LCD_Create_Custom_createChar(3,Network_3);
 			LCD_Create_Custom_createChar(4,Network_4);
 			LCD_Create_Custom_createChar(5,Network_5);
-
-			
 		}
 		
 		
@@ -155,38 +153,40 @@ static void lcd_displaying_task(void *params)
 				}
 				case  2:
 				{
+					LCD_setCursor(0,0);
 					if(!getMotorState())
 					{
-						LCD_setCursor(0,0);
-						lcd_printf("MOTOR:  OFF     ");
-						LCD_setCursor(0,1);
-						lcd_printf("                ");
+						lcd_printf("MOTOR :  OFF    ");
 					}
 					else
 					{
-						LCD_setCursor(0,0);
-						lcd_printf("MOTOR CURRENT:  ");
-						LCD_setCursor(0,1);
-						lcd_printf("%03lu.%02lu            ",(Analog_Parameter_Struct.Motor_Current_IntPart),(Analog_Parameter_Struct.Motor_Current_DecPart));
+						lcd_printf("MOTOR :  ON     ");
 					}
+					
+					LCD_setCursor(0,1);
+					if(user_settings_parameter_struct.autoStartAddress)
+					{
+						lcd_printf("AUTO  :  ON     ");
+					}
+					else
+					{
+						lcd_printf("AUTO  :  OFF    ");
+					}
+					//else
+					//{
+					//LCD_setCursor(0,0);
+					//lcd_printf("MOTOR WATTAGE:  ");
+					//LCD_setCursor(0,1);
+					//lcd_printf("%03lu.%02lu kW         ",(Analog_Parameter_Struct.Motor_Power_IntPart),(Analog_Parameter_Struct.Motor_Power_DecPart));
+					//}
 					break;
 				}
 				case  3:
 				{
-					if(!getMotorState())
-					{
-						LCD_setCursor(0,0);
-						lcd_printf("MOTOR:  OFF     ");
-						LCD_setCursor(0,1);
-						lcd_printf("                ");
-					}
-					else
-					{
-						LCD_setCursor(0,0);
-						lcd_printf("MOTOR WATTAGE:  ");
-						LCD_setCursor(0,1);
-						lcd_printf("%03lu.%02lu kW         ",(Analog_Parameter_Struct.Motor_Power_IntPart),(Analog_Parameter_Struct.Motor_Power_DecPart));
-					}
+					LCD_setCursor(0,0);
+					lcd_printf("MOTOR CURRENT:  ");
+					LCD_setCursor(0,1);
+					lcd_printf("%03lu.%02lu            ",(Analog_Parameter_Struct.Motor_Current_IntPart),(Analog_Parameter_Struct.Motor_Current_DecPart));
 					break;
 				}
 				case 4:
@@ -316,6 +316,45 @@ static void lcd_displaying_task(void *params)
 					}
 					break;
 				}
+				case 8:
+				{
+					if(Analog_Parameter_Struct.Battery_percentage<35)
+					{
+						LCD_setCursor(0,0);
+						lcd_printf("LOW BATTERY     ");
+						LCD_setCursor(0,1);
+						lcd_printf("                ");
+						break;
+					}
+					else
+					{
+						screen++;
+					}
+				}
+				case 9:
+				{
+					LCD_setCursor(0,0);
+					lcd_printf("CURRENT SETTING ");
+					LCD_setCursor(0,1);
+					if(user_settings_parameter_struct.currentDetectionAddress)
+					{
+						lcd_printf("ON              ");
+					}
+					else
+					{
+						lcd_printf("OFF             ");
+					}
+					break;
+				}
+				//case 8:
+				//{
+				//LCD_clear();
+				//LCD_setCursor(0,0);
+				//lcd_printf("%d",xTaskGetTickCount());
+				//LCD_setCursor(0,1);
+				//lcd_printf("%d;%d",lastGSMCommunicationTime,lastToLastGSMCommunicationTime);
+				//break;
+				//}
 			}
 		}
 		
@@ -348,12 +387,18 @@ static void lcd_displaying_task(void *params)
 			}
 		}
 		
-		if (screen>7)
+		//screen = 8;
+		vTaskDelay(500);
+
+		if (screen>9)
 		{
 			screen=1;
+			
+			LCD_PWR_DIS();
+			lcd_in_sleep = true;
+			setNetworkCharacter=true;
+			vTaskDelay(100);
 		}
-		
-		vTaskDelay(500);
 	}
 }
 

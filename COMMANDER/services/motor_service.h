@@ -33,7 +33,7 @@
 #define ME_NOTAVAILABLE			0x03
 
 
-#define NO_RMS_VOLTAGE_READINGS 8
+#define NO_RMS_VOLTAGE_READINGS 5
 bool adc_read_buffer_done;
 
 

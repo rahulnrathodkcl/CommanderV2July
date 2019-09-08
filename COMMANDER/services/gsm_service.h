@@ -6,13 +6,15 @@
 #include "motor_service.h"
 #include "lcd_driver.h"
 
-#define VERSION_NO "  B24-03-09-19  "
+#define VERSION_NO "  B26-08-09-19  "
 
 
 volatile bool mcuWakeUpFromSleep;
 
 bool simReInit;
 bool isRegisteredNumber;
+
+bool autoNetworkDetection;
 
 uint8_t soundWaitTime;
 uint32_t soundWait;
@@ -100,6 +102,8 @@ void verifyRemoteNumber(void);
 void sendSMS(char *msg, bool predefMsg, uint8_t isM2M);
 void sendDTMFTone(uint8_t eventNo);
 void getSystemTime(uint8_t *Hours, uint8_t *Minutes);
+bool checkSMSForPassCode(char *receivedSMS);
+void sendFWUpdateSMS(void);
 
 
 void start_gsm_service(void);

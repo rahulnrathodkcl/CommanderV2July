@@ -210,7 +210,7 @@ int main (void)
 	}
 	LCD_clear();
 	lcd_printf(" CHECKING MODE ");
-	delay_ms(500);
+	//delay_ms(500);
 	#endif
 	
 	//////////////////////////////////////////////////////////////////////////
@@ -637,7 +637,7 @@ void start_application(void)
 	#ifdef LCD_SUPPORT
 	LCD_setCursor(0,1);
 	lcd_printf("APPLICATION MODE");
-	delay_ms(500);
+	delay_ms(200);
 	#endif
 	
 	/* Re base the Stack Pointer */
