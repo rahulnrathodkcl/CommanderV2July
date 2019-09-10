@@ -12,6 +12,8 @@ drivers\lcd_driver.c
 
 drivers\yalgo.c
 
+services\access_dma.c
+
 services\gsm_service.c
 
 services\lcd_service.c

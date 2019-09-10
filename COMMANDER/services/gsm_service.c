@@ -339,7 +339,7 @@ void checkRespSMS(char t1)
 void subDTMF(void)
 {
 	gsm_stop_play_record_file();
-	callCutWait = xTaskGetTickCount();
+	callCutWait =xTaskGetTickCount();
 }
 
 void processOnDTMF(char *dtmf_cmd)
@@ -1410,7 +1410,7 @@ bool checkSMSForPassCode(char *receivedSMS)
 		return true;
 	}
 
-	return false;	
+	return false;
 }
 
 void sendFWUpdateSMS(void)
@@ -1574,8 +1574,8 @@ static void vTask_GSM_service(void *params)
 						}
 						//for (uint8_t i=0;i<20;i++)
 						//{
-							//Signal_Strength = gsm_getsignalstrength();
-							//vTaskDelay(50);
+						//Signal_Strength = gsm_getsignalstrength();
+						//vTaskDelay(50);
 						//}
 						boolGsm_config_flag = true;
 					}
@@ -1627,19 +1627,22 @@ static void vTask_GSM_service(void *params)
 					
 					if (currentStatus == 'N' && currentCallStatus == 'N')
 					{
-						if(!getACPowerState() &&  isGSMModuleAwake && gsm_module_sleep_elligible())
+						if(getAllPhaseState()==AC_OFF &&  isGSMModuleAwake && gsm_module_sleep_elligible())
 						{
-							if(gsm_disable_csqn_urc()==GSM_ERROR_NONE)
+							if(motor_checkSleepElligible())
 							{
-								autoNetworkDetection=false;
+								if(gsm_disable_csqn_urc()==GSM_ERROR_NONE)
+								{
+									autoNetworkDetection=false;
+								}
+								gsm_module_enter_sleep();				//this statement goes after sending AT command, to ignore the wakeup of the module done by sending AT Command.
 							}
-							gsm_module_enter_sleep();				//this statement goes after sending AT command, to ignore the wakeup of the module done by sending AT Command.
 						}
 
 						if(isGSMModuleAwake)
 						{
 							////Update network
-							if (!autoNetworkDetection && ((xTaskGetTickCount() - network_update_time)>= (1*60*1000)))
+							if (((xTaskGetTickCount() - network_update_time)>= (1*60*1000)))
 							{
 								network_update_time = xTaskGetTickCount();
 								Signal_Strength = gsm_getsignalstrength();
@@ -1748,6 +1751,7 @@ static void vTask_GSM_service(void *params)
 						if(autoNetworkDetection && gsm_responseLine_isCSQN(response,&Signal_Strength))
 						{
 							lastGSMCommunicationTime=lastToLastGSMCommunicationTime;
+							network_update_time = xTaskGetTickCount();
 							continue;
 						}
 

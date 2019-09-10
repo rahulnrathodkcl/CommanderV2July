@@ -487,11 +487,9 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 	/*Using Buffered ADC to take Readings                                   */
 	/************************************************************************/
 	adc_read_buffer_done = false;
-	
 	while(adc_read_buffer_job(&adc_inst, samples_buffer, no_of_samples)!=STATUS_OK)
 	{}
 	ulTaskNotifyTake(pdTRUE,100/portTICK_PERIOD_MS);
-	
 	/************************************************************************/
 	
 	
@@ -826,10 +824,14 @@ uint16_t filterVoltage(enum phaseReading phase,uint16_t voltReading)
 //Function to save the 3 phase voltage from ADC in to the structure, ADC values are filtered, and multiplied by factor here.
 void detect_Three_Phase_Voltage(void) {
 	
+	
+	
 	if(xSemaphoreTake(xADC_Semaphore,portMAX_DELAY)== pdTRUE)
 	{
 		//int32_t adcRY = Read_ADC0(ADC_POSITIVE_INPUT_PIN19,2000);
 		int32_t adcRY = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN19);
+		int32_t adcYB = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN18);
+		int32_t adcBR = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN17);
 		adcRY = (adcRY-10);
 		if (adcRY<0)
 		{
@@ -837,14 +839,13 @@ void detect_Three_Phase_Voltage(void) {
 		}
 		else
 		{
-			adcRY = (((adcRY-10)*655)/1000);
+			adcRY = (((adcRY-10)*660)/1000);
 			if (adcRY<0)
 			{
 				adcRY = 0;
 			}
 		}
 		//int32_t adcYB = Read_ADC0(ADC_POSITIVE_INPUT_PIN18,2000);
-		int32_t adcYB = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN18);
 		adcYB = (adcYB-10);
 		if (adcYB<0)
 		{
@@ -852,7 +853,7 @@ void detect_Three_Phase_Voltage(void) {
 		}
 		else
 		{
-			adcYB = (((adcYB-10)*655)/1000);
+			adcYB = (((adcYB-10)*660)/1000);
 			if (adcYB<0)
 			{
 				adcYB = 0;
@@ -860,7 +861,6 @@ void detect_Three_Phase_Voltage(void) {
 		}
 
 		//int32_t adcBR =  Read_ADC0(ADC_POSITIVE_INPUT_PIN17,2000);
-		int32_t adcBR = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN17);
 		adcBR = (adcBR-12);
 		if (adcBR<0)
 		{
@@ -899,9 +899,9 @@ void set_Three_Phase_State_From_Voltage(void) {
 	uint8_t temp_phase_state = structThreePhase_state.u8t_phase_ac_state;		//save last AC Phase State, in case AC Phase State is going to change
 	
 	
-	if ((Analog_Parameter_Struct.PhaseRY_Voltage < 40) &&
-	(Analog_Parameter_Struct.PhaseYB_Voltage < 40) &&
-	(Analog_Parameter_Struct.PhaseBR_Voltage < 40))				// if All phase volt, less than 40
+	if ((Analog_Parameter_Struct.PhaseRY_Voltage < 80) &&
+	(Analog_Parameter_Struct.PhaseYB_Voltage < 80) &&
+	(Analog_Parameter_Struct.PhaseBR_Voltage < 80))				// if All phase volt, less than 40
 	{
 		structThreePhase_state.u8t_phase_ac_state = AC_OFF; //no phase is present, light is cut off
 	}
@@ -909,7 +909,18 @@ void set_Three_Phase_State_From_Voltage(void) {
 	(abs(Analog_Parameter_Struct.PhaseYB_Voltage-Analog_Parameter_Struct.PhaseBR_Voltage)>user_settings_parameter_struct.singlePhasingVoltage) ||
 	(abs(Analog_Parameter_Struct.PhaseBR_Voltage-Analog_Parameter_Struct.PhaseRY_Voltage)>user_settings_parameter_struct.singlePhasingVoltage))  // if diff betweeen any 2 phases > 80
 	{
-		structThreePhase_state.u8t_phase_ac_state = AC_2PH;//Single phasing Occured
+			if((Analog_Parameter_Struct.PhaseRY_Voltage>100 && Analog_Parameter_Struct.PhaseYB_Voltage>100) ||
+			(Analog_Parameter_Struct.PhaseYB_Voltage>100 && Analog_Parameter_Struct.PhaseBR_Voltage>100) ||
+			(Analog_Parameter_Struct.PhaseBR_Voltage>100 && Analog_Parameter_Struct.PhaseRY_Voltage>100))
+			{
+				structThreePhase_state.u8t_phase_ac_state = AC_2PH;//Single phasing Occured
+			}
+			else
+			{
+				structThreePhase_state.u8t_phase_ac_state = AC_OFF; //no phase is present, light is cut off
+		
+				
+			}
 	}
 	else  //all Phase are present
 	{
@@ -2019,8 +2030,8 @@ static void vTask_MOTORCONTROL(void *params)
 		}
 		//// check if it is the time for new Voltage reading and if so than get new Voltage Reading.
 		if(should_Detect_New_Voltage()) {
-			detect_battery_voltage_and_percentage();
-			detect_Three_Phase_Voltage();
+					detect_battery_voltage_and_percentage();
+					detect_Three_Phase_Voltage();
 		}
 		////////
 		

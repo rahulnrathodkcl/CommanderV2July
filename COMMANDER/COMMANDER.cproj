@@ -1031,6 +1031,12 @@
     <Compile Include="drivers\yalgo.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="services\access_dma.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="services\access_dma.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="services\gsm_service.c">
       <SubType>compile</SubType>
     </Compile>
