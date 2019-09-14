@@ -32,6 +32,7 @@
 
 /** Boolean variable to signal if the ringing on the RING pin */
 volatile bool isRinging;
+volatile uint32_t lastRingStateChangeTime;
 
 /** Boolean variable to signal if currently the SIM800C is active or is asleep*/
 volatile bool isGSMModuleAwake;

@@ -6,10 +6,12 @@
 #include "motor_service.h"
 #include "lcd_driver.h"
 
-#define VERSION_NO "  B27-10-09-19  "
+#define VERSION_NO "  B28-14-09-19  "
 
 
 volatile bool mcuWakeUpFromSleep;
+volatile bool boolGsm_config_flag;
+volatile bool boolOne_Time_Msg_Delete_Flag;
 
 bool simReInit;
 bool isRegisteredNumber;

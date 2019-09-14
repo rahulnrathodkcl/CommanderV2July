@@ -207,6 +207,10 @@ void playSoundAgain(char *string)
 				playSound('M',true);
 			}
 		}
+		else if(maxPlayingFiles==1)
+		{
+			playSound('M',true);
+		}
 	}
 }
 
@@ -225,7 +229,18 @@ void playRepeatedFiles(char *fileList)
 
 bool callTimerExpire(void)
 {
-	return ((xTaskGetTickCount() - callCutWait) >= (callCutWaitTime * 100));
+	if(isRinging)
+	{
+		if(xTaskGetTickCount()-lastRingStateChangeTime>3000)
+		{
+			return true;
+		}
+	}
+	else
+	{
+		return ((xTaskGetTickCount() - callCutWait) >= (callCutWaitTime * 100));
+	}
+	return false;
 }
 
 char OutGoingcallState(char *response)
@@ -1488,8 +1503,8 @@ static void vTask_GSM_service(void *params)
 	inCall=false;
 	simReInit=false;
 	
-	bool boolGsm_config_flag			=false;
-	bool boolOne_Time_Msg_Delete_Flag   =false;
+	boolGsm_config_flag			=false;
+	boolOne_Time_Msg_Delete_Flag   =false;
 	
 	Signal_Strength = 0;
 	
@@ -1572,12 +1587,12 @@ static void vTask_GSM_service(void *params)
 						{
 							autoNetworkDetection = true;
 						}
-						//for (uint8_t i=0;i<20;i++)
-						//{
-						//Signal_Strength = gsm_getsignalstrength();
-						//vTaskDelay(50);
-						//}
+						
+						Signal_Strength = gsm_getsignalstrength();
+						network_update_time = xTaskGetTickCount();
+							
 						boolGsm_config_flag = true;
+						gsmStatusChange=true;
 					}
 					else
 					{

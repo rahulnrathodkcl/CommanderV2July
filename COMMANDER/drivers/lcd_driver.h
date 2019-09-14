@@ -69,6 +69,8 @@ uint8_t _initialized;
 uint8_t _numlines;
 uint8_t _row_offsets[4];
 
+volatile bool gsmStatusChange;
+
 void LCD_init(void);
 void LCD_PWR_CONFIG(void);
 void LCD_PWR_EN(void);

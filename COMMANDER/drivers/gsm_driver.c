@@ -63,6 +63,7 @@ static void gsm_rx_handler(uint8_t instance)
 static void gsm_ring_detect_pin_callback(void)
 {
 	isRinging = !port_pin_get_input_level(GSM_RING_PIN);
+	lastRingStateChangeTime = xTaskGetTickCountFromISR();
 }
 
 void gsm_init(void)
@@ -136,7 +137,7 @@ bool gsm_module_sleep_elligible(void)
 	if(isGSMModuleAwake)
 	{
 		bool ret=false;
-		ret= ((xTaskGetTickCount() - lastGSMCommunicationTime)>=50000L);
+		ret= ((xTaskGetTickCount() - lastGSMCommunicationTime)>=30000L);
 		return ret;
 	}
 	return true;
@@ -880,7 +881,7 @@ enum gsm_error gsm_enable_all_incomming_calls(void)
 
 enum gsm_error gsm_stop_play_record_file(void)
 {
-	return gsm_send_at_command((const char*)("AT+CREC=5\r"), (const char*)RESPONS_OK,2000,0, NULL);
+	return gsm_send_at_command((const char*)("AT+CREC=5\r"), (const char*)RESPONS_OK,500,0, NULL);
 }
 
 enum gsm_error gsm_play_record_file(const char *filename,bool playInfinitely)

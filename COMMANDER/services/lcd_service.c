@@ -10,7 +10,8 @@ static void lcd_displaying_task(void *params)
 {
 	UNUSED(params);
 	
-	lcd_in_sleep = false;
+	gsmStatusChange=true;
+	lcd_in_sleep =false;
 	setNetworkCharacter=true;
 	LCD_PWR_CONFIG();
 	LCD_PWR_EN();
@@ -136,9 +137,28 @@ static void lcd_displaying_task(void *params)
 			lcd_printf("Initializing... ");
 			LCD_setCursor(0,1);
 			lcd_printf("COMMANDER v2    ");
+			screen=1;
 		}
 		else
 		{
+			if(gsmStatusChange)
+			{
+				LCD_setCursor(0,0);
+				lcd_printf("PHONE STATUS    ");
+				if(boolGsm_config_flag)
+				{
+					LCD_setCursor(0,1);
+					lcd_printf("ON              ");
+				}	
+				else
+				{
+					LCD_setCursor(0,1);
+					lcd_printf("OFF             ");
+				}
+				gsmStatusChange = false;
+				vTaskDelay(2000/portTICK_PERIOD_MS);
+			}
+			
 			switch(screen)
 			{
 				case  1:

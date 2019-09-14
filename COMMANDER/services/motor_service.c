@@ -481,17 +481,17 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 	
 	uint16_t no_of_samples = 544;  //272 samples contain one full cycle
 	uint16_t samples_buffer[no_of_samples];
-	uint32_t temp = xTaskGetTickCount();
 	
 	/************************************************************************/
 	/*Using Buffered ADC to take Readings                                   */
 	/************************************************************************/
 	adc_read_buffer_done = false;
+	uint32_t temp = xTaskGetTickCount();
 	while(adc_read_buffer_job(&adc_inst, samples_buffer, no_of_samples)!=STATUS_OK)
 	{}
 	ulTaskNotifyTake(pdTRUE,100/portTICK_PERIOD_MS);
 	/************************************************************************/
-	
+	temp = xTaskGetTickCount();
 	
 	//for (uint16_t i=0;i<no_of_samples;i++)
 	//{
@@ -1383,7 +1383,7 @@ void operateOnStableLine(void)
 	{
 		THREEPHASE_OK_LED_OFF;
 		if (user_settings_parameter_struct.dndAddress == DND_OFF &&					//DND IS OFF FOR ALL KIND OF EVENTS
-		!user_settings_parameter_struct.detectSinglePhasing)					//SINGLE PHASING PROTECTION IS ON
+		user_settings_parameter_struct.detectSinglePhasing)					//SINGLE PHASING PROTECTION IS ON
 		{
 			simEventTemp[9] = registerEvent('A'); //register TO SIM 2 phase power ON
 		}
@@ -1975,6 +1975,14 @@ static void vTask_MOTORCONTROL(void *params)
 	eventOccured=true;
 	//////////////////////////////
 
+
+	//struct port_config adc_pin_config;
+	//port_get_config_defaults(&adc_pin_config);
+	//adc_pin_config.input_pull= PORT_PIN_PULL_DOWN;
+	//adc_pin_config.direction = PORT_PIN_DIR_INPUT;
+	//port_pin_set_config(PIN_PA09, &adc_pin_config);
+	//port_pin_set_config(PIN_PA10, &adc_pin_config);
+	//port_pin_set_config(PIN_PA11, &adc_pin_config);
 	
 	for (;;)
 	{
@@ -1996,7 +2004,7 @@ static void vTask_MOTORCONTROL(void *params)
 			{
 				if(firstEvent)
 				{
-					if(xTaskGetTickCount()-delayForFirstEvent>35000L)
+					if((xTaskGetTickCount()-delayForFirstEvent>35000L) || boolGsm_config_flag)
 					{
 						firstEvent = false;
 					}
@@ -2126,7 +2134,7 @@ void start_motor_service(void)
 	config_extint_chan_isr.gpio_pin_mux       = MUX_PB11A_EIC_EXTINT11;
 	config_extint_chan_isr.gpio_pin_pull      = EXTINT_PULL_UP;
 	config_extint_chan_isr.detection_criteria = EXTINT_DETECT_RISING;
-	config_extint_chan_isr.wake_if_sleeping   = false;
+	config_extint_chan_isr.wake_if_sleeping   = true;
 	extint_chan_set_config(11, &config_extint_chan_isr);
 	
 	extint_register_callback(PR2_ISR,11,EXTINT_CALLBACK_TYPE_DETECT);
