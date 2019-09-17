@@ -298,6 +298,8 @@ void operateOnWaterEvent(void);
 void Configure_ADC0(void);
 uint32_t Read_ADC0(uint32_t adc_pin,uint16_t samples);
 uint32_t Read_Voltage_ADC0(uint32_t adc_pin);
+void lowPassFrequency(uint16_t* input, uint16_t* output, int points);
+
 void autoSetCurrent(void);
 void speakAmpere(void);
 void PR2_ISR(void);

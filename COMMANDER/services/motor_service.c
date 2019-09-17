@@ -434,7 +434,6 @@ void Configure_ADC0(void)
 	config.resolution	= ADC_RESOLUTION_12BIT;
 	
 	config.clock_prescaler = ADC_CLOCK_PRESCALER_DIV64; //125kHz adc clock (8MHz/64)
-	
 	config.run_in_standby = true;
 	
 	adc_init(&adc_inst, ADC, &config);// Initialize the ADC
@@ -481,6 +480,7 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 	
 	uint16_t no_of_samples = 544;  //272 samples contain one full cycle
 	uint16_t samples_buffer[no_of_samples];
+	uint16_t output_buffer[no_of_samples];
 	
 	/************************************************************************/
 	/*Using Buffered ADC to take Readings                                   */
@@ -503,13 +503,16 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 	
 	if(adc_read_buffer_done)
 	{
+		
+		lowPassFrequency(samples_buffer,output_buffer,no_of_samples);
+		
 		uint32_t square = 0;
 		double  mean = 0.0;
 		double  root = 0.0;
 		
 		for (uint16_t i = 0; i < no_of_samples; i++)
 		{
-			square += pow(samples_buffer[i], 2);
+			square += pow(output_buffer[i], 2);
 		}
 		
 		mean = (square / (float)(no_of_samples));
@@ -523,6 +526,8 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 			delay_us(1);
 		}
 		//
+
+		lowPassFrequency(samples_buffer,output_buffer,no_of_samples);
 		
 		return (uint32_t)root;
 	}
@@ -549,6 +554,41 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 	//
 	//return samples_buffer[5]; //0,1,2,3,4 are considered as voltage spikes
 }
+
+void lowPassFrequency(uint16_t* input, uint16_t* output, int points)
+{
+	//int RawData;
+	//signed long SmoothDataINT;
+	//signed long SmoothDataFP;
+	//int Beta = 1; // Length of the filter < 16
+//
+	//void main (void){
+		//while(1){
+			//// Function that brings Fresh Data into RawData
+			//RawData = GetRawData();
+			//RawData <<= FP_Shift; // Shift to fixed point
+			//SmoothDataFP = (SmoothDataFP<< Beta)-SmoothDataFP;
+			//SmoothDataFP += RawData;
+			//SmoothDataFP >>= Beta;
+			//// Don't do the following shift if you want to do further
+			//// calculations in fixed-point using SmoothData
+			//SmoothDataINT = SmoothDataFP>> FP_Shift;
+		//}
+	//}
+
+	float RC = 1.0/(100*2*3.14);  //0.0015923566
+	float dt = 1.0/25600;//0.0000390625
+	double alpha = dt/(RC+dt);
+	//float alpha = 0.1;
+	output[0] = input[0];
+	
+	for(int i = 1; i < points; ++i)
+	{
+		//output[i] = output[i-1] + (alpha*(input[i] - output[i-1]));
+		output[i] = ((float)output[i-1]) - (alpha*((float)(output[i-1] - input[i])));
+	}
+}
+
 
 void autoSetCurrent(void)
 {
@@ -2237,7 +2277,7 @@ void start_motor_service(void)
 		xTaskCreate(Water_Level_Task,NULL,(uint16_t)700,NULL,1,NULL);
 	}
 	
-	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)750,NULL,1, &motorTask);
+	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)1300,NULL,1, &motorTask);
 
 }
 
