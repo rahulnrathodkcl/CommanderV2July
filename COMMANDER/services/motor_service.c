@@ -909,18 +909,16 @@ void set_Three_Phase_State_From_Voltage(void) {
 	(abs(Analog_Parameter_Struct.PhaseYB_Voltage-Analog_Parameter_Struct.PhaseBR_Voltage)>user_settings_parameter_struct.singlePhasingVoltage) ||
 	(abs(Analog_Parameter_Struct.PhaseBR_Voltage-Analog_Parameter_Struct.PhaseRY_Voltage)>user_settings_parameter_struct.singlePhasingVoltage))  // if diff betweeen any 2 phases > 80
 	{
-			if((Analog_Parameter_Struct.PhaseRY_Voltage>100 && Analog_Parameter_Struct.PhaseYB_Voltage>100) ||
-			(Analog_Parameter_Struct.PhaseYB_Voltage>100 && Analog_Parameter_Struct.PhaseBR_Voltage>100) ||
-			(Analog_Parameter_Struct.PhaseBR_Voltage>100 && Analog_Parameter_Struct.PhaseRY_Voltage>100))
-			{
+			//if((Analog_Parameter_Struct.PhaseRY_Voltage>100 && Analog_Parameter_Struct.PhaseYB_Voltage>100) ||
+			//(Analog_Parameter_Struct.PhaseYB_Voltage>100 && Analog_Parameter_Struct.PhaseBR_Voltage>100) ||
+			//(Analog_Parameter_Struct.PhaseBR_Voltage>100 && Analog_Parameter_Struct.PhaseRY_Voltage>100))
+			//{
 				structThreePhase_state.u8t_phase_ac_state = AC_2PH;//Single phasing Occured
-			}
-			else
-			{
-				structThreePhase_state.u8t_phase_ac_state = AC_OFF; //no phase is present, light is cut off
-		
-				
-			}
+			//}
+			//else
+			//{
+				//structThreePhase_state.u8t_phase_ac_state = AC_OFF; //no phase is present, light is cut off
+			//}
 	}
 	else  //all Phase are present
 	{
@@ -1608,7 +1606,7 @@ void terminateStartRelay(void)
 {
 	if (startSequenceOn &&  xTaskGetTickCount() - tempStartSequenceTimer > (startSequenceTimerTime * 100))
 	{
-		if((((unsigned int)user_settings_parameter_struct.starDeltaTimerAddress) * 1000) <= (((uint16_t)startSequenceTimerTime)*100))
+		if((((uint32_t)user_settings_parameter_struct.starDeltaTimerAddress) * 1000L) <= (((uint32_t)startSequenceTimerTime)*100))
 		{
 			START_RELAY_OFF;
 			tempStartSequenceTimer=xTaskGetTickCount();
@@ -2066,7 +2064,7 @@ static void vTask_MOTORCONTROL(void *params)
 			operateOnStableLine();
 		}
 		
-		if(stopMotorCommandGiven && xTaskGetTickCount()-tempStopSequenceTimer>5000)
+		if(stopMotorCommandGiven && xTaskGetTickCount()-tempStopSequenceTimer>5000L)
 		{
 			stopMotorCommandGiven=false;
 		}
@@ -2237,7 +2235,7 @@ void start_motor_service(void)
 		xTaskCreate(Water_Level_Task,NULL,(uint16_t)700,NULL,1,NULL);
 	}
 	
-	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)750,NULL,1, &motorTask);
+	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)800,NULL,1, &motorTask);
 
 }
 

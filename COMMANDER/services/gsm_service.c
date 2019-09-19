@@ -1083,9 +1083,9 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 		{
 			STARTIME = 2;
 		}
-		if (STARTIME > 65000)
+		if (STARTIME > 65000L)
 		{
-			STARTIME = 65000;
+			STARTIME = 65000L;
 		}
 		saveStarDeltaTimer(STARTIME);
 		
@@ -1412,7 +1412,7 @@ void getSystemTime(uint8_t *Hours, uint8_t *Minutes)
 bool checkSMSForPassCode(char *receivedSMS)
 {
 	char passCode[10]={0};
-	uint32_t pCodeint = factory_settings_parameter_struct.DeviceId_ee + (factory_settings_parameter_struct.dateCode/2);
+	uint32_t pCodeint = factory_settings_parameter_struct.DeviceId_ee + (factory_settings_parameter_struct.dateCode<<1);
 	pCodeint = pCodeint >> 4;
 	pCodeint = pCodeint << 4;
 	pCodeint = pCodeint % 1000000L;
@@ -1486,7 +1486,6 @@ static void vTask_GSM_service(void *params)
 {
 	
 	uint32_t network_update_time = 0;
-	
 	GSM_PWR_AS_OP;
 	
 	struct port_config pin_conf_gsm_status;
@@ -1505,6 +1504,8 @@ static void vTask_GSM_service(void *params)
 	
 	boolGsm_config_flag			=false;
 	boolOne_Time_Msg_Delete_Flag   =false;
+	
+	lastRingStateChangeTime=0;
 	
 	Signal_Strength = 0;
 	
@@ -1555,6 +1556,7 @@ static void vTask_GSM_service(void *params)
 	isGSMModuleAwake=false;
 	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
 	lastGSMCommunicationTime=0;
+	lastToLastGSMCommunicationTime=0;
 	gsm_module_exit_sleep(false);				//to switch DTR pin so that sim remains active
 
 	for (;;)
@@ -1895,7 +1897,7 @@ static void vTask_GSM_service(void *params)
 }
 void start_gsm_service(void)
 {
-	xTaskCreate(vTask_GSM_service,NULL,(uint16_t)940,NULL,1,NULL);
+	xTaskCreate(vTask_GSM_service,NULL,(uint16_t)1000,NULL,1,NULL);
 }
 
 bool busy(void)
