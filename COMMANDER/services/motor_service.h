@@ -132,8 +132,8 @@ volatile uint8_t last_three_phase_state;
 
 //////////////////////////////////////////////////////////////////////////
 //************* Variables For Call State On LCD *************************
-uint8_t callStateOnLCD;
-char numberOnLCD[20];
+volatile uint8_t callStateOnLCD;
+volatile char numberOnLCD[20];
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
@@ -314,7 +314,7 @@ uint8_t getAllPhaseState(void);
 void setAllPhaseState(uint8_t state);
 bool getPhaseSequence(void);
 void setPhaseSequence(bool phaseSequence);
-bool getMotorState(void);
+volatile bool getMotorState(void);
 void setMotorState(bool state);
 bool getMotorState_from_pin(void);
 void readSensorState(uint8_t *var3phaseState, bool *var3PhaseSequence, bool *motorState, bool *acPhaseState);

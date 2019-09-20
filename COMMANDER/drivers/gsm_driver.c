@@ -1151,7 +1151,7 @@ bool gsm_responseLine_isRinging(char *response)
 	}
 }
 
-bool gsm_responseLine_isCSQN(char *response,uint8_t *signal)
+bool gsm_responseLine_isCSQN(char *response, volatile uint8_t *signal)
 {
 	if(strstr(response,"+CSQN"))
 	{
@@ -1165,39 +1165,39 @@ bool gsm_responseLine_isCSQN(char *response,uint8_t *signal)
 			uint8_t nw = atoi(ptr_tocken);
 			if (nw==0 || nw==1 || nw== 99)
 			{
-				*signal = 0;
+				*signal= 0;
 			}
 			else
 			{
 				if (nw>=2 && nw<=7)
 				{
-					*signal = 1;
+					*signal= 1;
 				}
 				else if (nw>=8 && nw<=13)
 				{
-					*signal = 2;
+					*signal= 2;
 				}
 				else if (nw>=14 && nw<=19)
 				{
-					*signal = 3;
+					*signal= 3;
 				}
 				else if (nw>=20 && nw<=25)
 				{
-					*signal = 4;
+					*signal= 4;
 				}
 				else if (nw>=26 && nw<=31)
 				{
-					*signal = 5;
+					*signal= 5;
 				}
 				else
 				{
-					*signal = 0;
+					*signal= 0;
 				}
 			}
 		}
 		else
 		{
-			*signal  = 0;
+			*signal= 0;
 		}
 		return true;
 	}

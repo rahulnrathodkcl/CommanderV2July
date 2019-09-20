@@ -201,7 +201,7 @@ enum gsm_error gsm_disable_new_sms_message_indications(void);
 
 enum gsm_error gsm_enable_csqn_urc(void);
 enum gsm_error gsm_disable_csqn_urc(void);
-bool gsm_responseLine_isCSQN(char *response,uint8_t *signal);
+bool gsm_responseLine_isCSQN(char *response, volatile uint8_t *signal);
 
 enum gsm_error gsm_send_sms(const char *phone_number, const char *message);
 uint8_t gsm_get_sms_index(uint8_t required_sms_status);

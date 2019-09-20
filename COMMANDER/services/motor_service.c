@@ -30,7 +30,7 @@ volatile unsigned char ucharPhase_Seq_Timer_Counter=0;
 volatile unsigned char ucharVoltage_Detect_Timer_Counter=1;		//to set timer for new Voltage Detection
 volatile unsigned char ucharCurrent_Detect_Flag=0;
 
-unsigned char ucharPhase_1_Timer_Counter=0;
+volatile unsigned char ucharPhase_1_Timer_Counter=0;
 
 struct ac_module ac_instance;
 struct rtc_module rtc_instance;
@@ -945,14 +945,13 @@ void detect_Motor_Current(void){
 		
 		if(ADCcurrent>15)
 		{
-			ADCcurrent = abs(ADCcurrent - 15);
+			ADCcurrent = ADCcurrent - 15;
 		}
 		else if(ADCcurrent <= 15)
 		{
 			ADCcurrent = 0;
 		}
 		
-		xSemaphoreGive(xADC_Semaphore);
 		Analog_Parameter_Struct.Motor_Current_ADC_Value = ADCcurrent;				// does ADCcurrent here have ADC Value of Current ?
 		//ADCcurrent = (ADCcurrent*7225)/1000;
 		ADCcurrent = (ADCcurrent*3425)/1000;
@@ -965,6 +964,8 @@ void detect_Motor_Current(void){
 		Analog_Parameter_Struct.Motor_Current_DecPart = ADCcurrent%100;
 		ucharCurrent_Detect_Flag = 0;												//reset the flag, to disable current reading for next 500ms
 		calcPowerConsumption();
+		
+		xSemaphoreGive(xADC_Semaphore);
 	}
 }
 
@@ -975,8 +976,8 @@ void calcPowerConsumption(void)
 {
 	uint16_t avgVotlage = Analog_Parameter_Struct.PhaseRY_Voltage + Analog_Parameter_Struct.PhaseYB_Voltage + Analog_Parameter_Struct.PhaseBR_Voltage;
 	
-	double result = (avgVotlage/(float)3) * (Analog_Parameter_Struct.Motor_Current/(float)100);
-	result = sqrt(3) * result * 85 / (float)100;
+	double result = (avgVotlage/3.0) * (Analog_Parameter_Struct.Motor_Current/100.0);
+	result = sqrt(3) * result * 85.0 / 100.0;
 
 	Analog_Parameter_Struct.Motor_Power = (uint32_t) result;
 	Analog_Parameter_Struct.Motor_Power_IntPart = (uint32_t) result / 1000;
@@ -1526,7 +1527,7 @@ void stopMotor(bool commanded, bool forceStop,bool offButton)
 
 bool startMotorTimerOver(void)
 {
-	return (xTaskGetTickCount() - tempStartTimer >= (((unsigned long int)user_settings_parameter_struct.autoStartTimeAddress * 1000)));
+	return ((xTaskGetTickCount() - tempStartTimer) >= ((uint32_t)user_settings_parameter_struct.autoStartTimeAddress * 1000L));
 }
 
 void unknownMotorOff(void)
@@ -1539,7 +1540,7 @@ void unknownMotorOff(void)
 
 bool singlePhasingTimerOver(void)
 {
-	return (singlePhasingTimerOn && xTaskGetTickCount() - tempSinglePhasingTimer > ((unsigned int)singlePhasingTime * 100));
+	return (singlePhasingTimerOn && xTaskGetTickCount() - tempSinglePhasingTimer > (((uint16_t)singlePhasingTime) * 100));
 }
 
 void operateOnSinglePhasing(void)
@@ -1877,8 +1878,8 @@ static void vTask_MOTORCONTROL(void *params)
 	Configure_ADC0();
 	
 	configure_ac();
-	configure_rtc();
-	configure_event();
+	//configure_rtc();
+	//configure_event();
 	
 	//////////////////////////////////////////////////////////////////////////
 	gotOffCommand = false;
@@ -1909,8 +1910,14 @@ static void vTask_MOTORCONTROL(void *params)
 	current_three_phase_state = AC_OFF;
 	//////////////////////////////////////////////////////////////////////////
 	
+	stopMotorCommandGiven=false;
+	motorFeedbackEvent = false;
+	
 	startTimerOn = false;
 
+	waitStableLineTime = 50;
+	waitStableLineOn = false;
+	
 	singlePhasingTime = 6;
 	singlePhasingTimerOn = false;
 

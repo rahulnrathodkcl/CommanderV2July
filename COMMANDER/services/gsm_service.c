@@ -1502,6 +1502,8 @@ static void vTask_GSM_service(void *params)
 	inCall=false;
 	simReInit=false;
 	
+	isRinging = false;
+	
 	boolGsm_config_flag			=false;
 	boolOne_Time_Msg_Delete_Flag   =false;
 	
