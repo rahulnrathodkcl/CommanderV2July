@@ -200,50 +200,50 @@ struct m2m_Numbers
 struct user_settings_parameter
 {
 	//////////////////////////////////////////////////////////////////////////
-	uint8_t u8tfirst_time_write_ee;			//1
+	volatile uint8_t u8tfirst_time_write_ee;			//1
 	//////////////////////////////////////////////////////////////////////////
-	uint8_t autoStartAddress;				//1
-	uint16_t autoStartTimeAddress;			//2
+	volatile uint8_t autoStartAddress;				//1
+	volatile uint16_t autoStartTimeAddress;			//2
 	
-	char dndAddress;						//1
-	uint8_t responseAddress;				//1
-	uint16_t starDeltaTimerAddress;			//2
+	volatile char dndAddress;						//1
+	volatile uint8_t responseAddress;				//1
+	volatile uint16_t starDeltaTimerAddress;			//2
 	
-	uint8_t eventStageAddress;				//1
-	uint8_t noCallAddress;					//1
-	uint8_t noCallStartTimeHourAddress;		//1
+	volatile uint8_t eventStageAddress;				//1
+	volatile uint8_t noCallAddress;					//1
+	volatile uint8_t noCallStartTimeHourAddress;		//1
 	
-	uint8_t noCallStartTimeMinuteAddress;	//1
-	uint8_t noCallStopTimeHourAddress;		//1
-	uint8_t noCallStopTimeMinuteAddress;	//1
-	uint8_t lowVoltAddress;					//1
+	volatile uint8_t noCallStartTimeMinuteAddress;	//1
+	volatile uint8_t noCallStopTimeHourAddress;		//1
+	volatile uint8_t noCallStopTimeMinuteAddress;	//1
+	volatile uint8_t lowVoltAddress;					//1
 	
-	uint8_t currentDetectionAddress;		//1
-	uint32_t normalLoadAddress;				//4
-	uint32_t overloadAddress;				//4
-	uint32_t underloadAddress;				//4
+	volatile uint8_t currentDetectionAddress;		//1
+	volatile uint32_t normalLoadAddress;				//4
+	volatile uint32_t overloadAddress;				//4
+	volatile uint32_t underloadAddress;				//4
 	
-	uint8_t underloadPerAddress;			//1
-	uint8_t overloadPerAddress;				//1
+	volatile uint8_t underloadPerAddress;			//1
+	volatile uint8_t overloadPerAddress;				//1
 	
-	uint8_t preventOverFlowAddress;			//1
-	uint8_t waterBypassAddress;				//1
+	volatile uint8_t preventOverFlowAddress;			//1
+	volatile uint8_t waterBypassAddress;				//1
 	
 ////////////////////////////////////////////////////
-	uint8_t detectSinglePhasing;			//1
-	uint16_t singlePhasingVoltage;			//2
+	volatile uint8_t detectSinglePhasing;			//1
+	volatile uint16_t singlePhasingVoltage;			//2
 ////////////////////////////////////////////////////
-	uint8_t detectPhaseSequence;			//1
+	volatile uint8_t detectPhaseSequence;			//1
 ////////////////////////////////////////////////////
-	uint8_t detectMotorFeedback;			//1
+	volatile uint8_t detectMotorFeedback;			//1
 
-	uint8_t over_under_DetectionMethod;/**  Detection of Method for Motor Underload,Overload; Power or Current*/			//1
+	volatile uint8_t over_under_DetectionMethod;/**  Detection of Method for Motor Underload,Overload; Power or Current*/			//1
 
 
-	uint8_t motorVoltageBypass;				//1
-	uint32_t motorVoltageBypassTime;			//4
+	volatile uint8_t motorVoltageBypass;				//1
+	volatile uint32_t motorVoltageBypassTime;			//4
 	
-	uint8_t dummy1;							//1
+	volatile uint8_t dummy1;							//1
 	//uint8_t dummy2;							//1
 	//uint8_t dummy3;							//1
 

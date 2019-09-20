@@ -1712,7 +1712,7 @@ static void vTask_GSM_service(void *params)
 							bool alterUsr = isAlterNumber(phone_number);
 							bool response_sms_processed_cmd = true;
 							
-							if(isAdmin)
+							if(admin)
 							{
 								setCallStateOnLCD(LCDCALLSTATE_INCOMINGSMS,"ADMIN",false);
 							}

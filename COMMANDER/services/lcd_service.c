@@ -417,7 +417,7 @@ static void lcd_displaying_task(void *params)
 			LCD_PWR_DIS();
 			lcd_in_sleep = true;
 			setNetworkCharacter=true;
-			vTaskDelay(100);
+			vTaskDelay(100/portTICK_PERIOD_MS);
 		}
 	}
 }

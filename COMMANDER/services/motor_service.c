@@ -486,12 +486,12 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 	/*Using Buffered ADC to take Readings                                   */
 	/************************************************************************/
 	adc_read_buffer_done = false;
-	uint32_t temp = xTaskGetTickCount();
+	//uint32_t temp = xTaskGetTickCount();
 	while(adc_read_buffer_job(&adc_inst, samples_buffer, no_of_samples)!=STATUS_OK)
 	{}
 	ulTaskNotifyTake(pdTRUE,100/portTICK_PERIOD_MS);
 	/************************************************************************/
-	temp = xTaskGetTickCount();
+	//temp = xTaskGetTickCount();
 	
 	//for (uint16_t i=0;i<no_of_samples;i++)
 	//{
@@ -516,13 +516,13 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 		// Calculate Root.
 		root = sqrt(mean);
 
-		//
-		temp = (root-20)*655/1000;
-		if (abs(Analog_Parameter_Struct.PhaseRY_Voltage - temp)> 80)
-		{
-			delay_us(1);
-		}
-		//
+		////
+		//temp = (root-20)*655/1000;
+		//if (abs(Analog_Parameter_Struct.PhaseRY_Voltage - temp)> 80)
+		//{
+			//delay_us(1);
+		//}
+		////
 		
 		return (uint32_t)root;
 	}
@@ -830,8 +830,6 @@ void detect_Three_Phase_Voltage(void) {
 	{
 		//int32_t adcRY = Read_ADC0(ADC_POSITIVE_INPUT_PIN19,2000);
 		int32_t adcRY = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN19);
-		int32_t adcYB = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN18);
-		int32_t adcBR = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN17);
 		adcRY = (adcRY-10);
 		if (adcRY<0)
 		{
@@ -846,6 +844,7 @@ void detect_Three_Phase_Voltage(void) {
 			}
 		}
 		//int32_t adcYB = Read_ADC0(ADC_POSITIVE_INPUT_PIN18,2000);
+		int32_t adcYB = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN18);
 		adcYB = (adcYB-10);
 		if (adcYB<0)
 		{
@@ -861,6 +860,7 @@ void detect_Three_Phase_Voltage(void) {
 		}
 
 		//int32_t adcBR =  Read_ADC0(ADC_POSITIVE_INPUT_PIN17,2000);
+		int32_t adcBR = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN17);
 		adcBR = (adcBR-12);
 		if (adcBR<0)
 		{
@@ -2341,6 +2341,7 @@ void configure_rtc(void)
 
 void ac_detect_callback(struct ac_module *const module_inst)
 {
+	asm("NOP");
 	;
 	//eventOccured = true;
 }
