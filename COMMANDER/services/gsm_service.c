@@ -1592,10 +1592,11 @@ static void vTask_GSM_service(void *params)
 				{
 					if(gsm_config_module()==GSM_ERROR_NONE)
 					{
-						if(gsm_enable_csqn_urc()==GSM_ERROR_NONE)
-						{
-							autoNetworkDetection = true;
-						}
+						
+						//if(gsm_enable_csqn_urc()==GSM_ERROR_NONE)
+						//{
+							//autoNetworkDetection = true;
+						//}
 						
 						Signal_Strength = gsm_getsignalstrength();
 						network_update_time = xTaskGetTickCount();
@@ -1619,10 +1620,10 @@ static void vTask_GSM_service(void *params)
 				{
 					mcuWakeUpFromSleep=false;
 					gsm_module_exit_sleep(false);
-					if(gsm_enable_csqn_urc()==GSM_ERROR_NONE)
-					{
-						autoNetworkDetection = true;
-					}
+					//if(gsm_enable_csqn_urc()==GSM_ERROR_NONE)
+					//{
+						//autoNetworkDetection = true;
+					//}
 				}
 				
 				
@@ -1655,10 +1656,10 @@ static void vTask_GSM_service(void *params)
 						{
 							if(motor_checkSleepElligible())
 							{
-								if(gsm_disable_csqn_urc()==GSM_ERROR_NONE)
-								{
-									autoNetworkDetection=false;
-								}
+								//if(gsm_disable_csqn_urc()==GSM_ERROR_NONE)
+								//{
+									//autoNetworkDetection=false;
+								//}
 								gsm_module_enter_sleep();				//this statement goes after sending AT command, to ignore the wakeup of the module done by sending AT Command.
 							}
 						}
@@ -1772,12 +1773,12 @@ static void vTask_GSM_service(void *params)
 						/************************************************************************/
 						/* Automatic Detection of Network Using CSQN URC, and continue to next loop*/
 						/************************************************************************/
-						if(autoNetworkDetection && gsm_responseLine_isCSQN(response,&Signal_Strength))
-						{
-							lastGSMCommunicationTime=lastToLastGSMCommunicationTime;
-							network_update_time = xTaskGetTickCount();
-							continue;
-						}
+						//if(autoNetworkDetection && gsm_responseLine_isCSQN(response,&Signal_Strength))
+						//{
+							//lastGSMCommunicationTime=lastToLastGSMCommunicationTime;
+							//network_update_time = xTaskGetTickCount();
+							//continue;
+						//}
 
 
 						if (!freezeIncomingCalls &&  (currentStatus == 'N' || currentStatus == 'R') && (currentCallStatus == 'N' || currentCallStatus == 'I')) //Ringing Incoming Call
