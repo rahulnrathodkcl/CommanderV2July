@@ -185,14 +185,14 @@ static void lcd_displaying_task(void *params)
 					
 					LCD_setCursor(0,1);
 					lcd_printf("                ");
-					//if(user_settings_parameter_struct.autoStartAddress)
-					//{
-						//lcd_printf("AUTO  :  ON     ");
-					//}
-					//else
-					//{
-						//lcd_printf("AUTO  :  OFF    ");
-					//}
+					if(user_settings_parameter_struct.autoStartAddress)
+					{
+						lcd_printf("AUTO  :  ON     ");
+					}
+					else
+					{
+						lcd_printf("AUTO  :  OFF    ");
+					}
 					//else
 					//{
 					//LCD_setCursor(0,0);
@@ -354,17 +354,17 @@ static void lcd_displaying_task(void *params)
 				}
 				case 9:
 				{
-					//LCD_setCursor(0,0);
-					//lcd_printf("CURRENT SETTING ");
-					//LCD_setCursor(0,1);
-					//if(user_settings_parameter_struct.currentDetectionAddress)
-					//{
-						//lcd_printf("ON              ");
-					//}
-					//else
-					//{
-						//lcd_printf("OFF             ");
-					//}
+					LCD_setCursor(0,0);
+					lcd_printf("CURRENT SETTING ");
+					LCD_setCursor(0,1);
+					if(user_settings_parameter_struct.currentDetectionAddress)
+					{
+						lcd_printf("ON              ");
+					}
+					else
+					{
+						lcd_printf("OFF             ");
+					}
 					break;
 				}
 				//case 8:
@@ -415,10 +415,10 @@ static void lcd_displaying_task(void *params)
 		{
 			screen=1;
 			
-			//LCD_PWR_DIS();
-			//lcd_in_sleep = true;
-			//setNetworkCharacter=true;
-			//vTaskDelay(100/portTICK_PERIOD_MS);
+			LCD_PWR_DIS();
+			lcd_in_sleep = true;
+			setNetworkCharacter=true;
+			vTaskDelay(100/portTICK_PERIOD_MS);
 		}
 	}
 }

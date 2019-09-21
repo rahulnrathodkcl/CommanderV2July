@@ -669,7 +669,7 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 	else if(StringstartsWith(received_command,"SPPV"))
 	{
 		memmove(received_command,received_command+4,strlen(received_command));
-		uint8_t sppVoltage = atoi(received_command);
+		uint16_t sppVoltage = atoi(received_command);
 		if(sppVoltage<20) sppVoltage=20;
 		if(sppVoltage>440) sppVoltage=440;
 		saveSinglePhasingVoltage(sppVoltage);
@@ -711,7 +711,7 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 			memmove(received_command,received_command+3,strlen(received_command));
 			if(received_command[0]=='L' || received_command[0]=='S' || received_command[0]=='O')
 			{
-				saveDNDSettings((char)received_command);  //save specific RESPONSE settings
+				saveDNDSettings((char)received_command[0]);  //save specific RESPONSE settings
 				
 				incomingSMSProcessed=true;
 				
@@ -804,7 +804,7 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 	else if(StringstartsWith(received_command,"MVBYPT"))
 	{
 		memmove(received_command,received_command+6,strlen(received_command));
-		uint8_t voltageBypTime = atoi(received_command);
+		uint32_t voltageBypTime = atoi(received_command);
 		if (voltageBypTime<10) voltageBypTime = 10;
 		if (voltageBypTime>3600L) voltageBypTime=3600L;
 		
@@ -825,7 +825,7 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 			memmove(received_command,received_command+4,strlen(received_command));
 			if(received_command[0]=='C' || received_command[0]=='A' || received_command[0]=='T' || received_command[0]=='N')
 			{
-				saveResponseSettings((char)received_command);  //save specific RESPONSE settings
+				saveResponseSettings((char)received_command[0]);  //save specific RESPONSE settings
 				
 				incomingSMSProcessed=true;
 				
@@ -959,7 +959,7 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 		incomingSMSProcessed=true;
 		response_sms_processed_cmd=true;
 		
-		buildStatusMessage(&resep_msg);
+		buildStatusMessage(resep_msg);
 	}
 	else if (StringstartsWith(received_command,"AMON") && (admin || alterNumber))
 	{
@@ -1451,7 +1451,12 @@ void sendFWUpdateSMS(void)
 		}
 		else
 		{
-			gsm_send_sms(ADMIN_1_MOBILE_NUMBER_PAGE,uResp_SMS);
+			struct mobile_no_struct mobile_no;
+			memset(page_data, '\0', sizeof(page_data));
+			eeprom_emulator_read_page(ADMIN_1_MOBILE_NUMBER_PAGE, page_data);
+			memcpy(&mobile_no,page_data,sizeof(mobile_no));
+
+			gsm_send_sms(mobile_no.mobile_no_ee,uResp_SMS);
 		}
 		
 		bootloader_parameter.ulongintDiscard = 0;
