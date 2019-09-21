@@ -154,6 +154,7 @@ struct ThreePhase_state
 	
 }structThreePhase_state;
 
+
 #define THREEPHASE_UNDEFINED 0
 #define THREEPHASE_ERROR	 1
 #define THREEPHASE_OK		 2
@@ -276,6 +277,10 @@ struct Analog_Parameter
 	volatile uint32_t Motor_Power_DecPart;
 	
 }Analog_Parameter_Struct;
+
+
+void initPhaseRMStruct(struct rmsVoltage *phaseRMSStruct);
+
 
 void adc_buffer_complete_callback(const struct adc_module *const module);
 

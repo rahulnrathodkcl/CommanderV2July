@@ -20,8 +20,8 @@ static void lcd_displaying_task(void *params)
 	LCD_init();
 	
 	uint8_t screen=1;
-	bool four_sec_timer_is_active = true;
-	bool two_sec_timer_is_active = false;
+	//bool four_sec_timer_is_active = true;
+	//bool two_sec_timer_is_active = false;
 	
 	uint8_t time=0;
 	
@@ -427,7 +427,7 @@ static void lcd_displaying_task(void *params)
 void start_lcd_service(void)
 {
 	xfour_Second_Queue=xQueueCreate(1,sizeof(uint8_t));
-	xTaskCreate(lcd_displaying_task,NULL,(uint16_t)400,NULL,1,NULL);
+	xTaskCreate(lcd_displaying_task,NULL,(uint16_t)500,NULL,1,NULL);
 	
 }
 

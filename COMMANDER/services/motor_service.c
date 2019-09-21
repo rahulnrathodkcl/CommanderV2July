@@ -10,7 +10,7 @@ static TaskHandle_t fiftymsTask=NULL;
 static void vTask_MOTORCONTROL(void *params);
 static void button_detect_pin_callback(void);
 
-static void start_button_callback(void);
+//static void start_button_callback(void);
 //static void stop_button_callback(void);
 //static void auto_button_callback(void);
 //static void lcdshow_button_callback(void);
@@ -1070,9 +1070,9 @@ bool getMotorState_from_pin(void)
 
 
 
-void readSensorState(uint8_t *allPhase, bool *phaseSeq,bool *motor, bool *acPhase)
+void readSensorState(uint8_t *localallPhase, bool *phaseSeq,bool *motor, bool *acPhase)
 {
-	*allPhase = structThreePhase_state.u8t_phase_ac_state;
+	*localallPhase = structThreePhase_state.u8t_phase_ac_state;
 	//*phaseSeq = structThreePhase_state.u8t_phase_sequence_flag;
 	if(structThreePhase_state.u8t_phase_sequence_flag == THREEPHASE_OK)
 	{
@@ -2002,7 +2002,7 @@ static void vTask_MOTORCONTROL(void *params)
 		if(!startSequenceOn && !stopSequenceOn)
 		{
 			uint8_t tempEventOccured=eventOccured;
-			uint8_t tempButtonEventOccured=buttonEventOccured;
+			//uint8_t tempButtonEventOccured=buttonEventOccured;
 			
 			
 			if(tempEventOccured)
@@ -2242,7 +2242,7 @@ void start_motor_service(void)
 		xTaskCreate(Water_Level_Task,NULL,(uint16_t)700,NULL,1,NULL);
 	}
 	
-	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)800,NULL,1, &motorTask);
+	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)900,NULL,1, &motorTask);
 
 }
 
@@ -2301,7 +2301,7 @@ void configure_ac(void)
 	struct ac_events conf_ac_events = {{0}};
 	
 	struct ac_chan_config conf_ac_channel;
-	struct port_config pin_conf;
+	//struct port_config pin_conf;
 	
 	ac_get_config_defaults(&conf_ac);
 	conf_ac.run_in_standby[0] = true;

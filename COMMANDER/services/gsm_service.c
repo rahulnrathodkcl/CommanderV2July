@@ -1904,7 +1904,7 @@ static void vTask_GSM_service(void *params)
 }
 void start_gsm_service(void)
 {
-	xTaskCreate(vTask_GSM_service,NULL,(uint16_t)1000,NULL,1,NULL);
+	xTaskCreate(vTask_GSM_service,NULL,(uint16_t)1100,NULL,1,NULL);
 }
 
 bool busy(void)
