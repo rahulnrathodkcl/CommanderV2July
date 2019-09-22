@@ -26,30 +26,6 @@ void gotoSleep(void);
 bool initSleepSeqeunce=false;
 uint32_t tempSleepWait=0;
 
-#define IS_MTB_ENABLED \
-        REG_MTB_MASTER & MTB_MASTER_EN
-#define DISABLE_MTB \
-        REG_MTB_MASTER = REG_MTB_MASTER & ~MTB_MASTER_EN
-#define ENABLE_MTB \
-        REG_MTB_MASTER = REG_MTB_MASTER | MTB_MASTER_EN
-
-__attribute__((aligned(1024)))
-volatile char __tracebuffer__[1024];
-volatile int __tracebuffersize__ = sizeof(__tracebuffer__);
-void InitTraceBuffer()
-{
-    int index = 0;
-    uint32_t mtbEnabled = IS_MTB_ENABLED;
-    DISABLE_MTB;
-    for(index =0; index<1024; index++)
-    {
-        __tracebuffer__[index];
-        __tracebuffersize__;
-    }
-    if(mtbEnabled)
-        ENABLE_MTB;
-}
-
 int main (void)
 {
 	system_init();
@@ -71,7 +47,7 @@ int main (void)
 	
 	//irq_initialize_vectors();
 	//cpu_irq_enable();
-	InitTraceBuffer();
+	//InitTraceBuffer();
 	delay_init();
 	init_eeprom();
 	

@@ -1,0 +1,36 @@
+. 2019-09-22 18:43:25.036 --------------------------------------------------------------------------
+. 2019-09-22 18:43:25.036 WinSCP Version 5.9.5 (Build 7441) (OS 10.0.18362 - Windows 10 Home)
+. 2019-09-22 18:43:25.036 Configuration: nul
+. 2019-09-22 18:43:25.037 Log level: Normal
+. 2019-09-22 18:43:25.037 Local account: KST2\rahul
+. 2019-09-22 18:43:25.037 Working directory: C:\Users\rahul\OneDrive\Commander V2\Commander V2 July\COMMANDER\Debug
+. 2019-09-22 18:43:25.037 Process ID: 17828
+. 2019-09-22 18:43:25.039 Command-line: "C:\Program Files (x86)\WinSCP\WinSCP.exe" /console=595 /consoleinstance=_19508_263 "/log=C:\Users\rahul\OneDrive\Commander V2\Commander V2 July\OUTPUT\WinSCP.log" "/ini=nul" "/command" "open ftps://rahulnrathodkcl:***@ftp.drivehq.com/" "put C:\Users\rahul\OneDrive\Commander V2\Commander V2 July\OUTPUT\firmware.bin \firmware\m.bin -transfer=binary -neweronly -preservetime" "exit"
+. 2019-09-22 18:43:25.040 Time zone: Current: GMT+5:30 (India Standard Time), No DST
+. 2019-09-22 18:43:25.040 Login time: Sunday, September 22, 2019 06:43:25 PM
+. 2019-09-22 18:43:25.040 --------------------------------------------------------------------------
+. 2019-09-22 18:43:25.040 Script: Retrospectively logging previous script records:
+> 2019-09-22 18:43:25.040 Script: open ftps://rahulnrathodkcl:***@ftp.drivehq.com/
+. 2019-09-22 18:43:25.040 --------------------------------------------------------------------------
+. 2019-09-22 18:43:25.040 Session name: rahulnrathodkcl@ftp.drivehq.com (Ad-Hoc site)
+. 2019-09-22 18:43:25.040 Host name: ftp.drivehq.com (Port: 990)
+. 2019-09-22 18:43:25.040 User name: rahulnrathodkcl (Password: Yes, Key file: No, Passphrase: No)
+. 2019-09-22 18:43:25.040 Transfer Protocol: FTP
+. 2019-09-22 18:43:25.040 Ping type: Dummy, Ping interval: 30 sec; Timeout: 15 sec
+. 2019-09-22 18:43:25.040 Disable Nagle: No
+. 2019-09-22 18:43:25.040 Proxy: None
+. 2019-09-22 18:43:25.040 Send buffer: 262144
+. 2019-09-22 18:43:25.040 UTF: Auto
+. 2019-09-22 18:43:25.040 FTPS: Implicit TLS/SSL [Client certificate: No]
+. 2019-09-22 18:43:25.040 FTP: Passive: Yes [Force IP: Auto]; MLSD: Auto [List all: Auto]; HOST: Auto
+. 2019-09-22 18:43:25.041 Session reuse: Yes
+. 2019-09-22 18:43:25.041 TLS/SSL versions: TLSv1.0-TLSv1.2
+. 2019-09-22 18:43:25.041 Local directory: default, Remote directory: home, Update: Yes, Cache: Yes
+. 2019-09-22 18:43:25.041 Cache directory changes: Yes, Permanent: Yes
+. 2019-09-22 18:43:25.041 Recycle bin: Delete to: No, Overwritten to: No, Bin path: 
+. 2019-09-22 18:43:25.041 Timezone offset: 0h 0m
+. 2019-09-22 18:43:25.041 --------------------------------------------------------------------------
+. 2019-09-22 18:43:25.209 Connecting to ftp.drivehq.com:990 ...
+. 2019-09-22 18:43:44.964 Connected with ftp.drivehq.com:990, negotiating TLS connection...
+. 2019-09-22 18:43:52.052 Timeout detected. (control connection)
+. 2019-09-22 18:43:52.052 Connection failed.
