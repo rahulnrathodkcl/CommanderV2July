@@ -1731,10 +1731,11 @@ static void vTask_GSM_service(void *params)
 							
 							StringtoUpperCase(Received_SMS);
 							
-							if(!admin)
-							{
-								admin = checkSMSForPassCode(Received_SMS);
-							}
+							//todo: remove the commented lines when the hanging problem is solved.
+							//if(!admin)
+							//{
+								//admin = checkSMSForPassCode(Received_SMS);
+							//}
 
 							if (admin || primaryUser || alterUsr)
 							{

@@ -292,7 +292,7 @@ bool isPrimaryNumber(char *number)
 	if(user_count_struct.current_user_no_count > 0)
 	{
 		char primaryNumber[20] = {0};
-		getIndexedNumber(&primaryNumber,user_count_struct.primaryNumberIndex);
+		getIndexedNumber(primaryNumber,user_count_struct.primaryNumberIndex);
 		if(strstr(number,primaryNumber))
 		{
 			return true;

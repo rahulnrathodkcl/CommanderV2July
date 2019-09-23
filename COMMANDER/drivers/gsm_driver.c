@@ -55,7 +55,7 @@ static void gsm_rx_handler(uint8_t instance)
 			//lastGSMCommandTime=xTaskGetTickCountFromISR();
 			uint8_t data = (usart_hw->DATA.reg & SERCOM_USART_DATA_MASK);
 			xQueueSendFromISR(gsm_rx_queue, &data, NULL);
-			//gsm_module_exit_sleep(true);
+			gsm_module_exit_sleep(true);
 		}
 	}
 }
@@ -1106,10 +1106,10 @@ bool gsm_read_response_line(char *buffer,uint8_t length)
 		}
 	}
 
-	if(line_non_empty)
-	{
-		gsm_module_exit_sleep(true);
-	}
+	//if(line_non_empty)
+	//{
+		//gsm_module_exit_sleep(true);
+	//}
 
 	*(buffer) = '\0';
 	return line_non_empty;

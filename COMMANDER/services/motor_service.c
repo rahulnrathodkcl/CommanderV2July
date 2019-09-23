@@ -723,7 +723,7 @@ void detect_battery_voltage_and_percentage(void)
 {
 	if(xSemaphoreTake(xADC_Semaphore,portMAX_DELAY)== pdTRUE)
 	{
-		uint32_t bat_v = Read_ADC0(ADC_POSITIVE_INPUT_PIN7,200);
+		uint32_t bat_v = Read_ADC0(ADC_POSITIVE_INPUT_PIN7,150);
 		Analog_Parameter_Struct.Battery_Voltage = (bat_v * 1457)/1000;
 		uint8_t bat_per = 0;
 		
@@ -940,7 +940,7 @@ void set_Three_Phase_State_From_Voltage(void) {
 void detect_Motor_Current(void){
 	if(xSemaphoreTake(xADC_Semaphore,portMAX_DELAY)== pdTRUE)
 	{
-		uint32_t ADCcurrent = Read_ADC0(ADC_POSITIVE_INPUT_PIN16,200);
+		uint32_t ADCcurrent = Read_ADC0(ADC_POSITIVE_INPUT_PIN16,150);
 		
 		
 		if(ADCcurrent>15)
@@ -1911,6 +1911,8 @@ static void vTask_MOTORCONTROL(void *params)
 	//////////////////////////////////////////////////////////////////////////
 	
 	stopMotorCommandGiven=false;
+	tempStopSequenceTimer=0;
+	
 	motorFeedbackEvent = false;
 	
 	startTimerOn = false;
