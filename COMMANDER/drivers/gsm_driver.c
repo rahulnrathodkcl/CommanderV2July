@@ -383,7 +383,7 @@ enum gsm_error gsm_check_connected_line_identification_presentation(void)
 			ptr_tocken = strtok(cmdx,":");
 			ptr_tocken = strtok(NULL,":");
 			ptr_tocken = strtok(ptr_tocken,",");
-			RemoveSpaces(ptr_tocken);
+			//RemoveSpaces(ptr_tocken);
 			line_identification = atoi(ptr_tocken);
 			if (line_identification == 0)
 			{
@@ -487,49 +487,52 @@ uint8_t gsm_getsignalstrength(void)
 	
 	if(gsm_err == GSM_ERROR_NONE)
 	{
-		if (strstr(cmdx,"99")==NULL)
+		if(strstr(cmdx,"+CSQ:"))
 		{
-			char *ptr_tocken;
-			ptr_tocken = strtok(cmdx,":");
-			ptr_tocken = strtok(NULL,":");
-			ptr_tocken = strtok(ptr_tocken,",");
-			RemoveSpaces(ptr_tocken);
-			uint8_t nw = atoi(ptr_tocken);
-			if (nw==0 || nw==1 || nw== 99)
+			if (strstr(cmdx,"99")==NULL)
 			{
-				sig_strength = 0;
-			}
-			else
-			{
-				if (nw>=2 && nw<=7)
-				{
-					sig_strength = 1;
-				}
-				else if (nw>=8 && nw<=13)
-				{
-					sig_strength = 2;
-				}
-				else if (nw>=14 && nw<=19)
-				{
-					sig_strength = 3;
-				}
-				else if (nw>=20 && nw<=25)
-				{
-					sig_strength = 4;
-				}
-				else if (nw>=26 && nw<=31)
-				{
-					sig_strength = 5;
-				}
-				else
+				char *ptr_tocken;
+				ptr_tocken = strtok(cmdx,":");
+				ptr_tocken = strtok(NULL,":");
+				ptr_tocken = strtok(ptr_tocken,",");
+				//RemoveSpaces(ptr_tocken);
+				uint8_t nw = atoi(ptr_tocken);
+				if (nw==0 || nw==1 || nw== 99)
 				{
 					sig_strength = 0;
 				}
+				else
+				{
+					if (nw>=2 && nw<=7)
+					{
+						sig_strength = 1;
+					}
+					else if (nw>=8 && nw<=13)
+					{
+						sig_strength = 2;
+					}
+					else if (nw>=14 && nw<=19)
+					{
+						sig_strength = 3;
+					}
+					else if (nw>=20 && nw<=25)
+					{
+						sig_strength = 4;
+					}
+					else if (nw>=26 && nw<=31)
+					{
+						sig_strength = 5;
+					}
+					else
+					{
+						sig_strength = 0;
+					}
+				}
 			}
-		}
-		else
-		{
-			sig_strength = 0;
+			else
+			{
+				sig_strength = 0;
+			}
 		}
 	}
 	else
@@ -1008,7 +1011,7 @@ enum gsm_error gsm_config_module(void)
 														}
 														else
 														{
-																return GSM_ERROR_CONFIG_FAILED;
+															return GSM_ERROR_CONFIG_FAILED;
 														}
 													}
 													else
@@ -1126,7 +1129,7 @@ char gsm_responseLine_isNew_SMS_Received(char *response)
 		ptr_tocken = strtok(response,",");
 		ptr_tocken = strtok(NULL,",");
 		
-		RemoveSpaces(ptr_tocken);
+		//RemoveSpaces(ptr_tocken);
 		
 		sms_index = atoi(ptr_tocken);
 		
@@ -1153,6 +1156,7 @@ bool gsm_responseLine_isRinging(char *response)
 
 bool gsm_responseLine_isCSQN(char *response, volatile uint8_t *signal)
 {
+//"+CSQN: 20,0"
 	if(strstr(response,"+CSQN"))
 	{
 		if (strstr(response,"99")==NULL)
@@ -1161,7 +1165,7 @@ bool gsm_responseLine_isCSQN(char *response, volatile uint8_t *signal)
 			ptr_tocken = strtok(response,":");
 			ptr_tocken = strtok(NULL,":");
 			ptr_tocken = strtok(ptr_tocken,",");
-			RemoveSpaces(ptr_tocken);
+			//RemoveSpaces(ptr_tocken);
 			uint8_t nw = atoi(ptr_tocken);
 			if (nw==0 || nw==1 || nw== 99)
 			{

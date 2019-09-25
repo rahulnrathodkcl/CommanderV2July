@@ -411,7 +411,7 @@ static void lcd_displaying_task(void *params)
 		//screen = 8;
 		vTaskDelay(500);
 
-		if (screen>8)
+		if (screen>9)
 		{
 			screen=1;
 			
