@@ -472,7 +472,7 @@ uint32_t Read_ADC0(uint32_t adc_pin,uint16_t samples)
 }
 
 
-uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
+uint32_t Read_Voltage_ADC0(uint32_t adc_pin, uint32_t oVoltage)
 {
 	delay_ms(5);
 	
@@ -503,12 +503,55 @@ uint32_t Read_Voltage_ADC0(uint32_t adc_pin)
 	
 	if(adc_read_buffer_done)
 	{
+		
+		
 		uint32_t square = 0;
 		double  mean = 0.0;
 		double  root = 0.0;
+		uint16_t lastRead=0;
 		
+		int temp=0;
+		bool highDetect = false;
+		uint16_t highDetectIndex;
 		for (uint16_t i = 0; i < no_of_samples; i++)
 		{
+			if(i==0)
+			{
+				lastRead = samples_buffer[i];
+			}
+			else
+			{
+				
+				if(!highDetect)
+				{
+					temp = samples_buffer[i] - lastRead;
+				}
+				else
+				{
+					temp = lastRead - samples_buffer[i];
+				}
+				
+				lastRead = samples_buffer[i];
+				
+				if(temp>500)
+				{
+					if(!highDetect)
+					{
+						highDetect= true;
+						highDetectIndex=i;
+					}
+					else
+					{
+						if(i-highDetectIndex<15)
+						{
+							invalidateVoltageReadings=true;
+							invalidateVoltageReadingTime = xTaskGetTickCount();
+							return 3999;
+						}
+					}
+				}
+			}
+			
 			square += pow(samples_buffer[i], 2);
 		}
 		
@@ -825,11 +868,27 @@ uint16_t filterVoltage(enum phaseReading phase,uint16_t voltReading)
 void detect_Three_Phase_Voltage(void) {
 	
 	
+	if(invalidateVoltageReadings)
+	{
+		if(xTaskGetTickCount()-invalidateVoltageReadingTime>4000)
+		{
+			invalidateVoltageReadings=false;
+		}
+		else
+		{
+			return;
+		}
+	}
 	
 	if(xSemaphoreTake(xADC_Semaphore,portMAX_DELAY)== pdTRUE)
 	{
 		//int32_t adcRY = Read_ADC0(ADC_POSITIVE_INPUT_PIN19,2000);
-		int32_t adcRY = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN19);
+		int32_t adcRY = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN19,Analog_Parameter_Struct.PhaseRY_Voltage);
+		if(invalidateVoltageReadings)
+		{
+			xSemaphoreGive(xADC_Semaphore);
+			return;
+		}
 		adcRY = (adcRY-10);
 		if (adcRY<0)
 		{
@@ -844,7 +903,12 @@ void detect_Three_Phase_Voltage(void) {
 			}
 		}
 		//int32_t adcYB = Read_ADC0(ADC_POSITIVE_INPUT_PIN18,2000);
-		int32_t adcYB = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN18);
+		int32_t adcYB = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN18,Analog_Parameter_Struct.PhaseYB_Voltage);
+		if(invalidateVoltageReadings)
+		{
+			xSemaphoreGive(xADC_Semaphore);
+			return;
+		}
 		adcYB = (adcYB-10);
 		if (adcYB<0)
 		{
@@ -860,7 +924,12 @@ void detect_Three_Phase_Voltage(void) {
 		}
 
 		//int32_t adcBR =  Read_ADC0(ADC_POSITIVE_INPUT_PIN17,2000);
-		int32_t adcBR = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN17);
+		int32_t adcBR = Read_Voltage_ADC0(ADC_POSITIVE_INPUT_PIN17,Analog_Parameter_Struct.PhaseBR_Voltage);
+		if(invalidateVoltageReadings)
+		{
+			xSemaphoreGive(xADC_Semaphore);
+			return;
+		}
 		adcBR = (adcBR-12);
 		if (adcBR<0)
 		{
@@ -1881,6 +1950,10 @@ static void vTask_MOTORCONTROL(void *params)
 	//configure_rtc();
 	//configure_event();
 	
+	
+	//////////////////////////////////////////////////////////////////////////
+		invalidateVoltageReadings=false;
+		invalidateVoltageReadingTime=0;
 	//////////////////////////////////////////////////////////////////////////
 	gotOffCommand = false;
 	gotOnCommand = false;

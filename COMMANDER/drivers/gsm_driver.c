@@ -176,6 +176,7 @@ enum gsm_error gsm_send_at_command(const char *const atcommand,const char* aResp
 	if (aDataBuffer == NULL)
 	{
 		//port_pin_set_output_level(GSM_DTR_PIN, !GSM_DTR_PIN_ACTIVE);
+		xSemaphoreGive(gsm_busy_semaphore);
 		return 0;
 	}
 

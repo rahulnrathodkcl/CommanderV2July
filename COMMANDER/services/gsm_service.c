@@ -508,13 +508,34 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 		{
 			if (err == GSM_ERROR_NONE)
 			{
-				strcpy(resep_msg,"GSM CALL WAITTING DISABLE : SUCCESS");
+				strcpy(resep_msg,"CALL WAIING DISABLE: SUCCESS");
 			}
 			else
 			{
-				strcpy(resep_msg,"GSM CALL WAITTING DISABLE : FAILED");
+				strcpy(resep_msg,"CALL WAITTING DISABLE : FAILED");
 			}
 		}
+	}
+	else if(StringstartsWith(received_command, "SETREV"))
+	{
+		incomingSMSProcessed=true;
+		sprintf(resep_msg,"FWV : %lu %s\nAUTO:%d SPP:%d SPPV:%d SEQP:%d DND:%d FDBK:%d UOM:%d MVBYP:%d MVBYPT:%lu RESP:%d OVR:%d UNDR:%d STAGE:%d STIME:%lu ATIME:%lu",
+				factory_settings_parameter_struct.DeviceId_ee,VERSION_NO,
+				user_settings_parameter_struct.autoStartAddress,
+				user_settings_parameter_struct.detectSinglePhasing,
+				user_settings_parameter_struct.singlePhasingVoltage,
+				user_settings_parameter_struct.detectPhaseSequence,
+				user_settings_parameter_struct.dndAddress,
+				user_settings_parameter_struct.detectMotorFeedback,
+				user_settings_parameter_struct.over_under_DetectionMethod,
+				user_settings_parameter_struct.motorVoltageBypass,
+				user_settings_parameter_struct.motorVoltageBypassTime,
+				user_settings_parameter_struct.responseAddress,
+				user_settings_parameter_struct.underloadPerAddress,
+				user_settings_parameter_struct.overloadPerAddress,
+				user_settings_parameter_struct.eventStageAddress,
+				user_settings_parameter_struct.starDeltaTimerAddress,
+				user_settings_parameter_struct.autoStartTimeAddress);
 	}
 	else if (StringstartsWith(received_command,"CLEARALL"))
 	{
@@ -546,18 +567,20 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 			setUnderloadPer(85);
 			setCurrentDetection(false);
 		}
-		saveEventStageSettings(0);
-		//saveBypassSettings(false);
-		saveDNDSettings(false);
-		saveResponseSettings('C');
-		saveAutoStartTimeSettings(50);
-		saveStarDeltaTimer(2);
-		
 		saveSinglePhasingSettings(true);
 		saveSinglePhasingVoltage(80);
 		savePhaseSequenceProtectionSettings(true);
-		setPrimaryNumberIndex(0);
-		setSecondaryNumberIndex(1);
+		saveDNDSettings(false);
+		saveMotorFeedbackDetectionSettings(MOTORFEEDBACK_DETECTION_ON);
+		saveUnderOverDetectionMethodSettings(MOTOR_UNDEROVER_DETECTION_CURRENT);
+		saveMotorVoltageBypassSettings(MOTOR_VOLTAGE_BYPASS_OFF);
+		saveMotorVoltageBypasssTimeSettings(10000L);
+		saveResponseSettings('T');
+		
+		saveNoCallSettings(false,0,0,0,0);
+		saveEventStageSettings(0);
+		saveAutoStartTimeSettings(50);
+		saveStarDeltaTimer(2);
 		
 		incomingSMSProcessed=true;
 		
@@ -606,7 +629,7 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 		
 		if (response_sms_processed_cmd == true)
 		{
-			strcpy(resep_msg,"MOTOR AUTOON ON");
+			strcpy(resep_msg,"MOTOR AUTO : ON");
 		}
 	}
 	else if (StringstartsWith(received_command,"AUTOOFF"))
@@ -618,7 +641,7 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 		
 		if (response_sms_processed_cmd == true)
 		{
-			strcpy(resep_msg,"MOTOR AUTOON OFF");
+			strcpy(resep_msg,"MOTOR AUTO : OFF");
 		}
 	}
 	else if (StringstartsWith(received_command,"WBYPON"))
@@ -1188,7 +1211,7 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 			{
 				if (response_sms_processed_cmd == true)
 				{
-					strcpy(resep_msg,"ALTERNATE MOBILE NO ADD SUCCESS");
+					strcpy(resep_msg,"ALTERNATE MOBILE ADD SUCCESS");
 				}
 			}
 		}
@@ -1228,7 +1251,9 @@ void processOnSMS(char *received_command, bool admin,bool response_sms_processed
 	{
 		if(!incomingSMSProcessed)
 		{
-			sprintf(resep_msg,"ERROR : %s",*copy_received_command);
+			strcpy(resep_msg, "ERROR : ");
+			strcat(resep_msg, copy_received_command);
+			//sprintf(resep_msg,"ERROR : %s",*copy_received_command);
 		}
 		setCallStateOnLCD(LCDCALLSTATE_OUTGOINGSMS,phone_number,false);
 		gsm_send_sms(phone_number,resep_msg);
@@ -1270,9 +1295,9 @@ void buildStatusMessage(char *resep_msg)
 		sprintf(strMotor,(const uint8_t*)("OFF"));
 	}
 	
-	sprintf(resep_msg,"RY: %d YB: %d BR: %d\nAC: %s\nSequence: %s\nMotor: %s\nCurrent: %dA\nNetwork: %d",
+	sprintf(resep_msg,"RY: %d YB: %d BR: %d\nAC: %s\nSequence: %s\nMotor: %s\nCurrent: %dA\nNetwork: %d\nBattery: %d%%",
 	Analog_Parameter_Struct.PhaseRY_Voltage,Analog_Parameter_Struct.PhaseYB_Voltage,Analog_Parameter_Struct.PhaseBR_Voltage,
-	strACState,strSeq,strMotor,Analog_Parameter_Struct.Motor_Current_IntPart,network);
+	strACState,strSeq,strMotor,Analog_Parameter_Struct.Motor_Current_IntPart,network, Analog_Parameter_Struct.Battery_percentage);
 }
 
 
@@ -1424,7 +1449,13 @@ bool checkSMSForPassCode(char *receivedSMS)
 		memmove(receivedSMS,receivedSMS+strlen(passCode),strlen(receivedSMS));		//discard passPhrase
 		return true;
 	}
-
+	
+	if(user_count_struct.current_user_no_count==0 && StringstartsWith(receivedSMS,"****"))
+	{
+		memmove(receivedSMS,receivedSMS+4,strlen(receivedSMS));		//discard passPhrase
+		return true;
+	}
+	
 	return false;
 }
 
@@ -1735,6 +1766,7 @@ static void vTask_GSM_service(void *params)
 								admin = checkSMSForPassCode(Received_SMS);
 							}
 
+							
 							if (admin || primaryUser || alterUsr)
 							{
 								if(StringstartsWith(Received_SMS,"#"))
@@ -1904,7 +1936,7 @@ static void vTask_GSM_service(void *params)
 }
 void start_gsm_service(void)
 {
-	xTaskCreate(vTask_GSM_service,NULL,(uint16_t)1100,NULL,1,NULL);
+	xTaskCreate(vTask_GSM_service,NULL,(uint16_t)1200,NULL,1,NULL);
 }
 
 bool busy(void)

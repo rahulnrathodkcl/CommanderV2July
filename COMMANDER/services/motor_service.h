@@ -131,6 +131,11 @@ volatile uint8_t current_three_phase_state;
 volatile uint8_t last_three_phase_state;
 
 //////////////////////////////////////////////////////////////////////////
+
+	bool invalidateVoltageReadings;
+	uint32_t invalidateVoltageReadingTime;
+	
+//////////////////////////////////////////////////////////////////////////
 //************* Variables For Call State On LCD *************************
 volatile uint8_t callStateOnLCD;
 volatile char numberOnLCD[20];
@@ -302,7 +307,7 @@ void operateOnWaterEvent(void);
 
 void Configure_ADC0(void);
 uint32_t Read_ADC0(uint32_t adc_pin,uint16_t samples);
-uint32_t Read_Voltage_ADC0(uint32_t adc_pin);
+uint32_t Read_Voltage_ADC0(uint32_t adc_pin, uint32_t oriVoltage);
 void autoSetCurrent(void);
 void speakAmpere(void);
 void PR2_ISR(void);

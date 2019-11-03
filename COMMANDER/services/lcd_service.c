@@ -149,7 +149,7 @@ static void lcd_displaying_task(void *params)
 				{
 					LCD_setCursor(0,1);
 					lcd_printf("ON              ");
-				}	
+				}
 				else
 				{
 					LCD_setCursor(0,1);
@@ -171,7 +171,35 @@ static void lcd_displaying_task(void *params)
 					lcd_printf("%03lu ",(Analog_Parameter_Struct.PhaseBR_Voltage));
 					break;
 				}
-				case  2:
+				case 2:
+				{
+					LCD_setCursor(0,0);
+					lcd_printf("3 PHASE SEQ:");
+					if (structThreePhase_state.u8t_phase_sequence_flag == THREEPHASE_OK)
+					{
+						lcd_printf(" OK ");
+					}
+					else
+					{
+						lcd_printf(" ERR");
+					}
+					LCD_setCursor(0,1);
+					lcd_printf("PHASE STATE:");
+					if (structThreePhase_state.u8t_phase_ac_state == AC_3PH)
+					{
+						lcd_printf(" 3PH ");
+					}
+					else if(structThreePhase_state.u8t_phase_ac_state == AC_2PH)
+					{
+						lcd_printf(" 2PH ");
+					}
+					else
+					{
+						lcd_printf(" OFF");
+					}
+					break;
+				}
+				case  3:
 				{
 					LCD_setCursor(0,0);
 					if(!getMotorState())
@@ -202,7 +230,7 @@ static void lcd_displaying_task(void *params)
 					//}
 					break;
 				}
-				case  3:
+				case  4:
 				{
 					LCD_setCursor(0,0);
 					lcd_printf("MOTOR CURRENT:  ");
@@ -210,35 +238,39 @@ static void lcd_displaying_task(void *params)
 					lcd_printf("%03lu.%02lu            ",(Analog_Parameter_Struct.Motor_Current_IntPart),(Analog_Parameter_Struct.Motor_Current_DecPart));
 					break;
 				}
-				case 4:
+				case 5:
 				{
 					LCD_setCursor(0,0);
-					lcd_printf("3 PHASE SEQ:");
-					if (structThreePhase_state.u8t_phase_sequence_flag == THREEPHASE_OK)
-					{
-						lcd_printf(" OK ");
-					}
-					else
-					{
-						lcd_printf(" ERR");
-					}
+					lcd_printf("CURRENT SETTING ");
 					LCD_setCursor(0,1);
-					lcd_printf("PHASE STATE:");
-					if (structThreePhase_state.u8t_phase_ac_state == AC_3PH)
+					if(user_settings_parameter_struct.currentDetectionAddress)
 					{
-						lcd_printf(" 3PH ");
-					}
-					else if(structThreePhase_state.u8t_phase_ac_state == AC_2PH)
-					{
-						lcd_printf(" 2PH ");
+						lcd_printf("ON              ");
 					}
 					else
 					{
-						lcd_printf(" OFF");
+						lcd_printf("OFF             ");
 					}
 					break;
 				}
-				case 5:
+				case 6:
+				{
+					if(user_settings_parameter_struct.currentDetectionAddress)
+					{
+						LCD_setCursor(0,0);
+						//lcd_printf("                ");
+						uint32_t temp_Int = user_settings_parameter_struct.overloadAddress / 100;
+						uint32_t temp_Dec = user_settings_parameter_struct.overloadAddress % 100;
+						lcd_printf("OVER  : %03lu.%02lu  ",temp_Int,temp_Dec);
+						LCD_setCursor(0,1);
+						//lcd_printf("                ");
+						temp_Int = user_settings_parameter_struct.underloadAddress / 100;
+						temp_Dec = user_settings_parameter_struct.underloadAddress % 100;
+						lcd_printf("UNDER : %03lu.%02lu  ",temp_Int,temp_Dec);
+					}
+					break;
+				}
+				case 7:
 				{
 					LCD_setCursor(0,0);
 					lcd_printf("O-LEVEL : ");
@@ -274,7 +306,7 @@ static void lcd_displaying_task(void *params)
 					}
 					break;
 				}
-				case 6:
+				case 8:
 				{
 					LCD_setCursor(0,0);
 					lcd_printf("BatteryPer: %u%% ",Analog_Parameter_Struct.Battery_percentage);
@@ -292,7 +324,7 @@ static void lcd_displaying_task(void *params)
 
 					break;
 				}
-				case 7:
+				case 9:
 				{
 					LCD_setCursor(0,0);
 					switch(callStateOnLCD)
@@ -337,7 +369,7 @@ static void lcd_displaying_task(void *params)
 					}
 					break;
 				}
-				case 8:
+				case 10:
 				{
 					if(Analog_Parameter_Struct.Battery_percentage<35)
 					{
@@ -351,22 +383,9 @@ static void lcd_displaying_task(void *params)
 					{
 						screen++;
 					}
-				}
-				case 9:
-				{
-					LCD_setCursor(0,0);
-					lcd_printf("CURRENT SETTING ");
-					LCD_setCursor(0,1);
-					if(user_settings_parameter_struct.currentDetectionAddress)
-					{
-						lcd_printf("ON              ");
-					}
-					else
-					{
-						lcd_printf("OFF             ");
-					}
 					break;
 				}
+				
 				//case 8:
 				//{
 				//LCD_clear();
@@ -385,25 +404,28 @@ static void lcd_displaying_task(void *params)
 			if(varPauseDisplay==false)
 			{
 				screen++;
-				if(!getMotorState() && screen==3)
+				if(!getMotorState() && screen==4)
 				{
 					screen++;
 				}
 				
-				if(!factory_settings_parameter_struct.ENABLE_WATER && screen==5)
+				if(screen==6 && (!user_settings_parameter_struct.currentDetectionAddress || !getMotorState()))
+				{
+					screen++;
+				}
+
+				if(!factory_settings_parameter_struct.ENABLE_WATER && screen==7)
 				{
 					screen++;
 				}
 				
+				if(callStateOnLCD==LCDCALLSTATE_IDLE && screen==9)
 				{
-					if(callStateOnLCD==LCDCALLSTATE_IDLE && screen==7)
-					{
-						screen++;
-					}
-					else if(callStateOnLCD!=LCDCALLSTATE_IDLE)
-					{
-						screen=7;
-					}
+					screen++;
+				}
+				else if(callStateOnLCD!=LCDCALLSTATE_IDLE)
+				{
+					screen=9;
 				}
 			}
 		}
@@ -411,7 +433,7 @@ static void lcd_displaying_task(void *params)
 		//screen = 8;
 		vTaskDelay(500);
 
-		if (screen>9)
+		if (screen>10)
 		{
 			screen=1;
 			
