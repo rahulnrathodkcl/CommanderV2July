@@ -275,6 +275,8 @@ uint32_t phantomISR;
 void Dummy_Handler(void)
 {
 	phantomISR = __get_IPSR();
+	NVIC_SystemReset();
+			
         while (1) {
         }
 }

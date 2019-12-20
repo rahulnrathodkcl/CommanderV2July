@@ -1424,6 +1424,9 @@ void operateOnStableLine(void)
 		{
 			tempPhaseSeq = getPhaseSequence();										// set current phase seq to the temp variable
 		}
+	
+		checkForSIMStatus();
+		
 		
 		if(tempPhaseSeq)															// if correct phase seq than
 		{

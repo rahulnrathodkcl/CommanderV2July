@@ -6,8 +6,20 @@
 #include "motor_service.h"
 #include "lcd_driver.h"
 
-#define VERSION_NO "  B31-03-11-19  "
+#define VERSION_NO "  B33-16-12-2019  "
+//////////////////////////////////////////////////////////////////////////
+//------------GSM OPERATION----------------------$$$$$$$$$$$$$$
+#define GSM_STATUS_POSITION		PIN_PA27
+#define GSM_STATUS_OK			port_pin_get_input_level(GSM_STATUS_POSITION)
+#define GSM_STATUS_ERROR		(!port_pin_get_input_level(GSM_STATUS_POSITION))
 
+#define GSM_PWR_DDR		REG_PORT_DIR1
+#define GSM_PWR_PORT	REG_PORT_OUT1
+#define GSM_PWR_POS		PORT_PB16
+#define GSM_PWR_AS_OP	GSM_PWR_DDR|=GSM_PWR_POS
+#define GSM_PWR_ON		GSM_PWR_PORT|=GSM_PWR_POS
+#define GSM_PWR_OFF		GSM_PWR_PORT&=~(GSM_PWR_POS)
+//////////////////////////////////////////////////////////////////////////
 
 volatile bool mcuWakeUpFromSleep;
 volatile bool boolGsm_config_flag;
@@ -89,6 +101,7 @@ void playSoundAgain(char *string);
 void playRepeatedFiles(char *fileList);
 bool callTimerExpire(void);
 char OutGoingcallState(char *response);
+void checkForSIMStatus();
 bool registerEvent(char eventType);
 void registerM2MEvent(uint8_t eventNo);
 void setMotorMGRResponse(char response);

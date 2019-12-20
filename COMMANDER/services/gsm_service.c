@@ -154,7 +154,8 @@ void acceptCall(void)
 	gsm_answer_an_incomming_call();
 	currentStatus = 'I';
 	currentCallStatus = 'I';
-	playSound('M',true);
+	statusOnCall();
+	//playSound('M',true);
 	//displayInIncomingCall
 }
 
@@ -266,6 +267,50 @@ char OutGoingcallState(char *response)
 		return 'N';
 	}
 }
+
+void checkForSIMStatus()
+{
+	uint8_t temp = 2;
+	while(temp--)
+	{
+		enum gsm_error temp;
+		temp = gsm_check_module();
+		if(temp == GSM_ERROR_NONE)
+		{
+			return;									// if SIM800 replies to the commands, than return from here.
+		}
+		else if(temp == GSM_ERROR_OPERATION_IN_PROGRESS)
+		{
+				//if Semaphore not available, wait for 2 seconds
+				uint32_t temp2 = xTaskGetTickCount();
+				if(xTaskGetTickCount()-temp2<2000)
+				{
+				}
+		}
+	}
+	
+	// Some problem in communication  with SIM800, or SIM800 is OFF. Restart SIM800C.
+	
+	if(GSM_STATUS_OK)
+	{
+		boolGsm_config_flag			=false;
+		boolOne_Time_Msg_Delete_Flag   =false;
+		
+		GSM_PWR_ON;
+		vTaskDelay(3000);
+		GSM_PWR_OFF;
+		vTaskDelay(5000);
+	}
+	
+	isGSMModuleAwake=false;
+	port_pin_set_output_level(GSM_DTR_PIN, GSM_DTR_PIN_ACTIVE);
+	lastGSMCommunicationTime=0;
+	lastToLastGSMCommunicationTime=0;
+	gsm_module_exit_sleep(false);				//to switch DTR pin so that sim remains active
+
+}
+
+
 
 bool registerEvent(char eventType)
 {
@@ -1505,19 +1550,7 @@ void sendFWUpdateSMS(void)
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////
-//------------GSM OPERATION----------------------$$$$$$$$$$$$$$
-#define GSM_STATUS_POSITION		PIN_PA27
-#define GSM_STATUS_OK			port_pin_get_input_level(GSM_STATUS_POSITION)
-#define GSM_STATUS_ERROR		(!port_pin_get_input_level(GSM_STATUS_POSITION))
 
-#define GSM_PWR_DDR		REG_PORT_DIR1
-#define GSM_PWR_PORT	REG_PORT_OUT1
-#define GSM_PWR_POS		PORT_PB16
-#define GSM_PWR_AS_OP	GSM_PWR_DDR|=GSM_PWR_POS
-#define GSM_PWR_ON		GSM_PWR_PORT|=GSM_PWR_POS
-#define GSM_PWR_OFF		GSM_PWR_PORT&=~(GSM_PWR_POS)
-//////////////////////////////////////////////////////////////////////////
 static void vTask_GSM_service(void *params)
 {
 	
