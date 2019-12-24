@@ -610,7 +610,7 @@ enum gsm_error gsm_send_sms(const char *phone_number, const char *message)
 	snprintf((char*)cmdx, MAX_BUFFER, "AT+CMGS=\"%s\"\r", phone_number);
 	if (gsm_send_at_command((const char*)cmdx, (const char*)">",60000, 0, NULL)==GSM_ERROR_NONE)
 	{
-		vTaskDelay(500/portTICK_PERIOD_MS);		//todo: check if sms is reaching time is reduced than 30 seconds, if yes, than keep this statement, else remove it.
+		//vTaskDelay(500/portTICK_PERIOD_MS);		//todo: check if sms is reaching time is reduced than 30 seconds, if yes, than keep this statement, else remove it.
 		memset(cmdx, '\0', MAX_BUFFER);
 		
 		snprintf((char*)cmdx, MAX_BUFFER, "%s\x1A\x0D",message);
@@ -730,7 +730,7 @@ enum gsm_error gsm_read_sms(uint8_t position, char *phone_number, uint8_t max_ph
 	}
 	memset(cmdx, '\0', MAX_BUFFER);
 	
-	uint8_t cmgr_at_command[10] = {0};
+	uint8_t cmgr_at_command[11] = {0};
 	
 	snprintf((char*)cmgr_at_command, MAX_BUFFER, "AT+CMGR=%d\r",position);
 	

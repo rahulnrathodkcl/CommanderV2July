@@ -2318,7 +2318,7 @@ void start_motor_service(void)
 		xTaskCreate(Water_Level_Task,NULL,(uint16_t)700,NULL,1,NULL);
 	}
 	
-	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)900,NULL,1, &motorTask);
+	xTaskCreate(vTask_MOTORCONTROL,NULL,(uint16_t)850,NULL,1, &motorTask);
 
 }
 

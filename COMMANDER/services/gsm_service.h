@@ -6,7 +6,7 @@
 #include "motor_service.h"
 #include "lcd_driver.h"
 
-#define VERSION_NO "  B33-16-12-2019  "
+#define VERSION_NO "  B34-22-12-19  "
 //////////////////////////////////////////////////////////////////////////
 //------------GSM OPERATION----------------------$$$$$$$$$$$$$$
 #define GSM_STATUS_POSITION		PIN_PA27

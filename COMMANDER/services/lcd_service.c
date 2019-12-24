@@ -449,7 +449,7 @@ static void lcd_displaying_task(void *params)
 void start_lcd_service(void)
 {
 	xfour_Second_Queue=xQueueCreate(1,sizeof(uint8_t));
-	xTaskCreate(lcd_displaying_task,NULL,(uint16_t)500,NULL,1,NULL);
+	xTaskCreate(lcd_displaying_task,NULL,(uint16_t)400,NULL,1,NULL);
 	
 }
 
